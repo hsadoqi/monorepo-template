@@ -4,6 +4,7 @@
  */
 
 import type { ResolvedAppearancePreference } from "@repo/domain-preferences"
+import type { ThemeApplier } from "@repo/runtime-theme"
 
 export interface ScopeThemeOverrides {
   isDarkMode?: boolean
@@ -87,4 +88,9 @@ export function applyCssToElement(
   Object.entries(cssVariables).forEach(([key, value]) => {
     element.style.setProperty(key, value)
   })
+}
+
+/** Concrete ThemeApplier implementation backed by direct DOM style mutation. */
+export const BrowserThemeApplier: ThemeApplier = {
+  applyCssToElement,
 }

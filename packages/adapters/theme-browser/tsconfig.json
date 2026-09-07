@@ -1,7 +1,7 @@
 {
-  "extends": "@repo/foundation-typescript-config/base.json",
+  "extends": "@repo/foundation-typescript-config/react-library.json",
   "compilerOptions": {
-    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

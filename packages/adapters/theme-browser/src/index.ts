@@ -16,4 +16,5 @@ export {
   clearThemeCSSVariables,
   applyScopeThemeToElement,
   applyCssToElement,
+  BrowserThemeApplier,
 } from "./browser-theme-applier"

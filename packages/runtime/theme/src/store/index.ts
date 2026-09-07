@@ -11,6 +11,3 @@ export type {
   ScopeStore as ThemeScopeStore,
   ScopeStoreApi as ThemeScopeStoreApi,
 } from "../scope/scope-store"
-
-export { useThemeStore } from "./create-theme-store"
-export type { ThemeStore } from "@repo/shared-contracts"

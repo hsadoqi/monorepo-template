@@ -41,7 +41,10 @@ export function createThemeRegistryStore(
   initialThemes: Record<string, ThemeDefinition> = {},
   initialSelectedId?: string
 ) {
-  const registry = createThemeRegistry(initialThemes, initialSelectedId) as ThemeRegistry
+  const registry = createThemeRegistry(
+    initialThemes,
+    initialSelectedId
+  ) as ThemeRegistry
 
   return create<ThemeRegistryStoreState>(() => ({
     themes: registry.state.themes,
