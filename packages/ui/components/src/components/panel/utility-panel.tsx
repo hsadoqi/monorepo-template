@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { cn } from "@repo/ui-components/lib/utils"
 import type { PanelModule } from "./panel-module"
 
@@ -35,7 +34,8 @@ export function UtilityPanel({
       <div className="min-h-0 overflow-hidden">
         <div
           className="border-border bg-background flex border-b"
-          hidden={!isOpen}
+          aria-hidden={!isOpen}
+          inert={!isOpen}
         >
           {visibleModules.map((module) => (
             <div key={module.id} className="min-w-0 flex-1 p-4">

@@ -16,13 +16,14 @@ describe("UtilityPanel", () => {
   it("renders module content when open", () => {
     renderUi(
       <UtilityPanel
+        data-testid="utility-panel-root"
         isOpen
         modules={[notesModule]}
         activeModuleIds={["notes"]}
         onOpenChange={() => {}}
       />
     )
-    expect(screen.getByText("Notes content")).toBeInTheDocument()
+    expect(screen.getByTestId("utility-panel-root").textContent).toBe("Notes content")
   })
 
   it("sets data-open=false and hides content from the accessibility tree when closed", () => {
@@ -36,6 +37,34 @@ describe("UtilityPanel", () => {
     )
     const root = screen.getByTestId("utility-panel-root")
     expect(root).toHaveAttribute("data-open", "false")
-    expect(screen.queryByText("Notes content")).not.toBeVisible()
+
+    // Content wrapper should be aria-hidden and inert when closed
+    const contentWrapper = screen
+      .getByText("Notes content")
+      .closest("div[class*='border-border']")
+    expect(contentWrapper).toHaveAttribute("aria-hidden")
+    expect(contentWrapper?.getAttribute("aria-hidden")).toBe("true")
+    expect(contentWrapper).toHaveAttribute("inert")
+  })
+
+  it("renders multiple active modules side by side", () => {
+    const scheduleModule: PanelModule = {
+      id: "schedule",
+      label: "Schedule",
+      icon: InboxIcon,
+      Content: () => <div>Schedule content</div>,
+    }
+
+    renderUi(
+      <UtilityPanel
+        isOpen
+        modules={[notesModule, scheduleModule]}
+        activeModuleIds={["notes", "schedule"]}
+        onOpenChange={() => { }}
+      />
+    )
+
+    expect(screen.getByText("Notes content")).toBeInTheDocument()
+    expect(screen.getByText("Schedule content")).toBeInTheDocument()
   })
 })
