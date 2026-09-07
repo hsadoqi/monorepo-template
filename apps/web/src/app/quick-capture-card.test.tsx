@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { useCaptureInboxStore } from "@/components/capture-inbox/use-capture-inbox-store"
@@ -82,7 +82,9 @@ describe("QuickCaptureCard", () => {
     render(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
     fireEvent.click(
-      screen.getByRole("button", { name: 'Tag "Buy milk" as task' })
+      screen.getByRole("button", {
+        name: 'Item 1: Tag as task ("Buy milk")',
+      })
     )
 
     expect(useCaptureInboxStore.getState().items[0]).toMatchObject({
@@ -98,7 +100,9 @@ describe("QuickCaptureCard", () => {
 
     render(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
-    fireEvent.click(screen.getByRole("button", { name: 'Archive "Buy milk"' }))
+    fireEvent.click(
+      screen.getByRole("button", { name: 'Item 1: Archive ("Buy milk")' })
+    )
 
     expect(useCaptureInboxStore.getState().items[0]).toMatchObject({
       status: "archived",
@@ -111,8 +115,54 @@ describe("QuickCaptureCard", () => {
 
     render(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
-    fireEvent.click(screen.getByRole("button", { name: 'Delete "Buy milk"' }))
+    fireEvent.click(
+      screen.getByRole("button", { name: 'Item 1: Delete ("Buy milk")' })
+    )
 
     expect(useCaptureInboxStore.getState().items).toHaveLength(0)
+  })
+
+  it("gives items with identical text distinct accessible names in the triage list", () => {
+    useCaptureInboxStore.getState().capture("Buy milk")
+    useCaptureInboxStore.getState().capture("Buy milk")
+
+    render(<QuickCaptureCard />)
+    fireEvent.click(screen.getByRole("button", { name: "Review" }))
+
+    expect(
+      screen.getByRole("button", { name: 'Item 1: Archive ("Buy milk")' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: 'Item 2: Archive ("Buy milk")' })
+    ).toBeInTheDocument()
+  })
+
+  it("restores previously captured items after a reload (rehydration)", async () => {
+    // Seed localStorage directly, as if a previous session had already
+    // persisted this item, without going through the live store instance
+    // (calling the store's own setState/capture here would immediately
+    // re-persist and mask what we're testing).
+    localStorage.setItem(
+      "capture-inbox-store",
+      JSON.stringify({
+        state: {
+          items: [
+            {
+              id: "seeded-1",
+              text: "Buy milk",
+              createdAt: "2026-09-07T12:00:00.000Z",
+              status: "unsorted",
+            },
+          ],
+        },
+        version: 1,
+      })
+    )
+
+    render(<QuickCaptureCard />)
+
+    await waitFor(() => {
+      expect(screen.getByText("1 unsorted item")).toBeInTheDocument()
+    })
   })
 })
