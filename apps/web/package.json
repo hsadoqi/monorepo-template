@@ -29,6 +29,7 @@
     "@repo/runtime-preferences": "workspace:*",
     "@repo/runtime-theme": "workspace:*",
     "@repo/services-cookies": "workspace:*",
+    "@repo/services-zustand": "workspace:*",
     "@repo/ui-components": "workspace:*",
     "@repo/ui-preferences": "workspace:*",
     "@repo/ui-tailwind-config": "workspace:*",
@@ -42,7 +43,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwind-merge": "^3.6.0",
-    "zod": "^4.5.4"
+    "zod": "^4.5.4",
+    "zustand": "^5.0.0"
   },
   "sideEffects": false,
   "devDependencies": {
