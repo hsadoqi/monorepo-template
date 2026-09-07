@@ -58,4 +58,61 @@ describe("QuickCaptureCard", () => {
 
     expect(screen.getByText("1 unsorted item")).toBeInTheDocument()
   })
+
+  it("shows an empty state when Review is opened with nothing unsorted", () => {
+    render(<QuickCaptureCard />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }))
+
+    expect(screen.getByText("Nothing to sort")).toBeInTheDocument()
+  })
+
+  it("lists unsorted items when Review is opened", () => {
+    useCaptureInboxStore.getState().capture("Buy milk")
+
+    render(<QuickCaptureCard />)
+    fireEvent.click(screen.getByRole("button", { name: "Review" }))
+
+    expect(screen.getByText("Buy milk")).toBeInTheDocument()
+  })
+
+  it("tags an item and removes it from the unsorted list", () => {
+    useCaptureInboxStore.getState().capture("Buy milk")
+
+    render(<QuickCaptureCard />)
+    fireEvent.click(screen.getByRole("button", { name: "Review" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: 'Tag "Buy milk" as task' })
+    )
+
+    expect(useCaptureInboxStore.getState().items[0]).toMatchObject({
+      status: "archived",
+      tag: "task",
+    })
+    expect(screen.queryByText("Buy milk")).not.toBeInTheDocument()
+    expect(screen.getByText("Nothing to sort")).toBeInTheDocument()
+  })
+
+  it("archives an item without a tag", () => {
+    useCaptureInboxStore.getState().capture("Buy milk")
+
+    render(<QuickCaptureCard />)
+    fireEvent.click(screen.getByRole("button", { name: "Review" }))
+    fireEvent.click(screen.getByRole("button", { name: 'Archive "Buy milk"' }))
+
+    expect(useCaptureInboxStore.getState().items[0]).toMatchObject({
+      status: "archived",
+      tag: undefined,
+    })
+  })
+
+  it("deletes an item entirely", () => {
+    useCaptureInboxStore.getState().capture("Buy milk")
+
+    render(<QuickCaptureCard />)
+    fireEvent.click(screen.getByRole("button", { name: "Review" }))
+    fireEvent.click(screen.getByRole("button", { name: 'Delete "Buy milk"' }))
+
+    expect(useCaptureInboxStore.getState().items).toHaveLength(0)
+  })
 })
