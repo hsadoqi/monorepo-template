@@ -539,3 +539,54 @@ describe("getAccessibleForeground (regression: finding #2)", () => {
     expect(result).toMatch(/^oklch\(/)
   })
 })
+
+describe("getAccessibleForeground with a `shades` candidate list", () => {
+  it("returns an existing shade rather than synthesizing a new color", () => {
+    const ramp = [
+      "oklch(97% 0.02 300)",
+      "oklch(80% 0.08 300)",
+      "oklch(60% 0.15 300)",
+      "oklch(35% 0.15 300)",
+      "oklch(10% 0.05 300)",
+    ]
+    const background = ramp[0]!
+    const result = getAccessibleForeground(background, { shades: ramp })
+    expect(ramp).toContain(result)
+    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it("picks the qualifying shade closest in lightness to the background", () => {
+    // Both the 35% and 10% steps clear 4.5:1 against a 97% background;
+    // the nearer one (35%) should win rather than jumping to the extreme.
+    const ramp = [
+      "oklch(97% 0.02 300)",
+      "oklch(35% 0.15 300)",
+      "oklch(10% 0.05 300)",
+    ]
+    const background = ramp[0]!
+    const result = getAccessibleForeground(background, { shades: ramp })
+    expect(result).toBe("oklch(35% 0.15 300)")
+  })
+
+  it("falls back to synthesis when no supplied shade reaches minContrast", () => {
+    // Every candidate is too close in lightness to the background to pass.
+    const ramp = ["oklch(58% 0 0)", "oklch(62% 0 0)", "oklch(65% 0 0)"]
+    const background = "oklch(60% 0 0)"
+    const result = getAccessibleForeground(background, { shades: ramp })
+    expect(ramp).not.toContain(result)
+    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it("ignores an empty shades array and synthesizes as before", () => {
+    const background = "oklch(60% 0.15 250)"
+    const result = getAccessibleForeground(background, { shades: [] })
+    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it("skips unparseable candidates without throwing", () => {
+    const ramp = ["not-a-color", "oklch(10% 0.05 300)"]
+    const background = "oklch(97% 0.02 300)"
+    const result = getAccessibleForeground(background, { shades: ramp })
+    expect(result).toBe("oklch(10% 0.05 300)")
+  })
+})

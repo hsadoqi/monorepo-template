@@ -94,6 +94,55 @@ describe("compile()", () => {
     })
   })
 
+  describe("typography", () => {
+    it("passes through font family and scale as CSS variables", () => {
+      const input: ThemeCompilationInput = {
+        primary: primaryColor,
+        headingFont: "Playfair Display",
+        bodyFont: "Inter",
+        monoFont: "Fira Code",
+        fontScale: 1.1,
+      }
+
+      const result = compile(input)
+
+      expect(result.cssVariables["--font-heading"]).toBe("Playfair Display")
+      expect(result.cssVariables["--font-body"]).toBe("Inter")
+      expect(result.cssVariables["--font-mono"]).toBe("Fira Code")
+      expect(result.cssVariables["--font-scale"]).toBe("1.1")
+      expect(result.theme?.typography).toEqual({
+        headingFont: "Playfair Display",
+        bodyFont: "Inter",
+        monoFont: "Fira Code",
+        fontScale: 1.1,
+        borderRadius: undefined,
+      })
+    })
+
+    it("compiles border radius as a rem value", () => {
+      const input: ThemeCompilationInput = {
+        primary: primaryColor,
+        borderRadius: 0.5,
+      }
+
+      const result = compile(input)
+
+      expect(result.cssVariables["--radius"]).toBe("0.5rem")
+    })
+
+    it("omits typography from the resolved theme when none is provided", () => {
+      const input: ThemeCompilationInput = {
+        primary: primaryColor,
+      }
+
+      const result = compile(input)
+
+      expect(result.theme?.typography).toBeUndefined()
+      expect(result.cssVariables["--font-heading"]).toBeUndefined()
+      expect(result.cssVariables["--radius"]).toBeUndefined()
+    })
+  })
+
   describe("CSS variable generation", () => {
     it("generates base color variables in oklch() format", () => {
       const input: ThemeCompilationInput = {

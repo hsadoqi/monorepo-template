@@ -3,6 +3,7 @@ export type {
   ThemeCompilationReport,
   ThemeCompilationResult,
   ResolvedTheme,
+  ResolvedThemeTypography,
   CssVariables,
 } from "./model"
 

@@ -1,8 +1,10 @@
 /**
  * Theme compilation: canonical definitions → CSS variables artifact.
  *
- * Transforms theme input (base colors + mode) into deterministic CSS custom
- * properties, deriving palettes, semantic colors, and accessible foregrounds.
+ * Transforms theme input (base colors + mode, plus typography and radius)
+ * into deterministic CSS custom properties, deriving palettes, semantic
+ * colors, and accessible foregrounds. Typography/radius are passed through
+ * as-is — they don't need the derivation colors do.
  *
  * Deterministic: same input always produces identical output.
  * No side effects, no async operations.
@@ -21,6 +23,7 @@ import type {
   ThemeCompilationInput,
   ThemeCompilationResult,
   ResolvedTheme,
+  ResolvedThemeTypography,
   CssVariables,
   ThemeCompilationReport,
 } from "./model"
@@ -36,7 +39,18 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
   const warnings: string[] = []
 
   try {
-    const { primary, accent, isDarkMode, customAccent, harmony } = input
+    const {
+      primary,
+      accent,
+      isDarkMode,
+      customAccent,
+      harmony,
+      headingFont,
+      bodyFont,
+      monoFont,
+      fontScale,
+      borderRadius,
+    } = input
 
     // Validate primary color is required
     if (!primary) {
@@ -161,6 +175,17 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
       : undefined
     const defaultFg = getAccessibleForeground(defaultBgCss)
 
+    // Typography is a passthrough: unlike colors, font names/scale/radius
+    // don't need shade generation or contrast derivation.
+    const typography: ResolvedThemeTypography | undefined =
+      headingFont !== undefined ||
+      bodyFont !== undefined ||
+      monoFont !== undefined ||
+      fontScale !== undefined ||
+      borderRadius !== undefined
+        ? { headingFont, bodyFont, monoFont, fontScale, borderRadius }
+        : undefined
+
     // Build resolved theme
     const resolvedTheme: ResolvedTheme = {
       isDarkMode: shouldUseDarkMode,
@@ -169,6 +194,7 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
         ...(customAccent && accentOklch ? { accent } : {}),
         ...(harmony ? { harmony } : {}),
       },
+      ...(typography ? { typography } : {}),
     }
 
     // Generate shade scales and compile to CSS variables
@@ -228,6 +254,15 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
 
     // Theme mode indicator
     cssVariables["--theme-mode"] = shouldUseDarkMode ? "dark" : "light"
+
+    // Typography and radius: passthrough CSS variables
+    if (headingFont) cssVariables["--font-heading"] = headingFont
+    if (bodyFont) cssVariables["--font-body"] = bodyFont
+    if (monoFont) cssVariables["--font-mono"] = monoFont
+    if (fontScale !== undefined)
+      cssVariables["--font-scale"] = String(fontScale)
+    if (borderRadius !== undefined)
+      cssVariables["--radius"] = `${borderRadius}rem`
 
     // Phase 3: Semantic color derivation
     // Future work to add: error, warning, success, info semantic colors

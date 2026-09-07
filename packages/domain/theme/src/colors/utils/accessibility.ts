@@ -150,6 +150,37 @@ export interface GetAccessibleForegroundOptions {
   /** Minimum contrast ratio the returned color must meet. Defaults to the
    * declared AA-normal target. */
   minContrast?: number
+  /**
+   * Existing shade strings — e.g. the same ramp `background` came from — to
+   * prefer over synthesizing a new color. Whichever of these meets
+   * `minContrast` and sits closest in lightness to `background` wins, so the
+   * result is always a real token from the caller's own palette rather than
+   * an ad hoc color. Only when none of them reach `minContrast` does this
+   * fall through to synthesizing a related color, then flat black/white.
+   */
+  shades?: string[]
+}
+
+function pickNearestQualifyingShade(
+  shades: string[],
+  background: string,
+  bgLightness: number,
+  minContrast: number
+): string | null {
+  let best: { css: string; delta: number } | null = null
+
+  for (const candidate of shades) {
+    if (!meetsContrastRequirement(candidate, background, minContrast)) continue
+
+    const parsed = parseOklchString(candidate)
+    const delta = parsed ? Math.abs(parsed.l - bgLightness) : 0
+
+    if (!best || delta < best.delta) {
+      best = { css: candidate, delta }
+    }
+  }
+
+  return best?.css ?? null
 }
 
 /**
@@ -158,8 +189,11 @@ export interface GetAccessibleForegroundOptions {
  * black/white swap) and independently verified to meet `minContrast`
  * (default: `CONTRAST_THRESHOLDS.AA_NORMAL`, 4.5:1).
  *
- * Unlike `suggestTextColorForBackground`/`adjustContrastByLightness`, this
- * evaluates BOTH the lighter and darker directions and picks the smaller
+ * When `options.shades` is supplied, an existing shade from that list is
+ * preferred over synthesizing a color — see `GetAccessibleForegroundOptions`.
+ *
+ * Otherwise, unlike `suggestTextColorForBackground`/`adjustContrastByLightness`,
+ * this evaluates BOTH the lighter and darker directions and picks the smaller
  * adjustment, rather than committing to one via a `luminance > 0.5`
  * threshold. That threshold is not where black-vs-white contrast is
  * actually equal (the real crossover is near relative luminance 0.179, not
@@ -178,6 +212,16 @@ export function getAccessibleForeground(
   const minContrast = options.minContrast ?? CONTRAST_THRESHOLDS.AA_NORMAL
   const bg = parseOklchString(background)
   if (!bg) return suggestTextColorForBackground(background)
+
+  if (options.shades && options.shades.length > 0) {
+    const fromShades = pickNearestQualifyingShade(
+      options.shades,
+      background,
+      bg.l,
+      minContrast
+    )
+    if (fromShades) return fromShades
+  }
 
   // Related candidate: same hue as the background (the "related" character
   // the contract calls for), chroma reduced rather than matched 1:1 — text
@@ -234,6 +278,37 @@ export function getAccessibleForeground(
   return meetsContrastRequirement(finalCss, background, minContrast)
     ? finalCss
     : suggestTextColorForBackground(background)
+}
+
+/**
+ * Foreground for UI chrome drawn *on top of* a color swatch — icons, copy
+ * buttons, badges — rather than for a swatch's own palette-token label.
+ *
+ * Always synthesizes (never restricted to `shades`) and targets AAA (7:1),
+ * not AA: a thin glyph needs more headroom than body text to read as
+ * decisive rather than "technically passing but muddy" at AA. Where AAA is
+ * mathematically unreachable for a given background (the midtone luminance
+ * band — see `getAccessibleForeground`'s fallback policy), this still
+ * degrades to a real, verified color, just not literally AAA.
+ */
+export function getIconForeground(background: string): string {
+  return getAccessibleForeground(background, {
+    minContrast: CONTRAST_THRESHOLDS.AAA_NORMAL,
+  })
+}
+
+/**
+ * Foreground for text that should read as a token *from the same palette*
+ * as `background` — e.g. a shade ramp's own label sitting on one of its
+ * shades. Restricted to `shades` so the result is always a real color from
+ * that ramp, not an ad hoc synthesized one; AA (4.5:1) is the target since
+ * this is body/label text, not a small glyph.
+ */
+export function getPaletteTokenForeground(
+  background: string,
+  shades: string[]
+): string {
+  return getAccessibleForeground(background, { shades })
 }
 
 /** The minimum ratio for a given WCAG level and text size. */
