@@ -9,7 +9,7 @@ import {
   SidebarTrigger,
   SidebarSeparator,
 } from "@repo/ui-components/base/sidebar"
-import { ThemeForm, ThemeMetadataForm } from "@repo/ui-theme"
+import { ThemeForm, ThemeMetadataForm } from "@repo/ui-theme/components"
 
 import { AppearanceToggle } from "@/components/appearance-toggle"
 import {

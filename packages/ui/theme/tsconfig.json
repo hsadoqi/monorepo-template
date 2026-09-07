@@ -4,6 +4,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "module": "esnext",
+    "composite": true,
+    "incremental": true,
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./src/*"],

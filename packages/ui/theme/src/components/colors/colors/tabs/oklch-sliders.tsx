@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { toCss } from "@/utils/shade-generation"
-import type { Oklch } from "@repo/domain-theme"
+import type { Oklch } from "@repo/domain-theme/colors"
 import { ThumbIndicator } from "./thumb-indicator"
 import { ColorPreviewStrip } from "../header/color-preview-strip"
 
