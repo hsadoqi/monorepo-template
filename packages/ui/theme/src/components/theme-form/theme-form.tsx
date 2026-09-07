@@ -2,130 +2,231 @@
 
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import * as z from "zod"
-import {
-  Field,
-  FieldGroup,
-  FieldError,
-  FieldLabel,
-} from "@repo/ui-components/base/field"
-import {
-  InputGroup,
-  InputGroupInput,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@repo/ui-components/base/input-group"
+import type { z } from "zod"
+import { Field, FieldGroup } from "@repo/ui-components/base/field"
 import { Button } from "@repo/ui-components/base/button"
+import {
+  parseOklchString,
+  oklchToCss,
+  DEFAULT_PRIMARY_COLOR,
+} from "@repo/domain-theme/colors"
+import { compile } from "@repo/domain-theme/compiler"
+import { getColorHarmonies } from "../../utils/get-color-harmonies"
+import { useOklchColor, DEFAULT_OKLCH_COLOR } from "../../hooks/use-oklch-color"
+import { themeFormSchema, type ThemeFormValues } from "./theme-form-schema"
+import { toThemeCompilationInput } from "./theme-form-mapper"
+import { AppearanceFields } from "./appearance-fields"
+import { CustomAccentToggle, AccentColorPicker } from "./accent-color-section"
+import { PrimaryColorField } from "./primary-color-field"
+import { TypographyFields } from "./typography-fields"
+import { BorderRadiusField } from "./border-radius-field"
 
-export const themeFormSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Bug title must be at least 2 characters.")
-    .max(32, "Bug title must be at most 20 characters."),
-  description: z
-    .string()
-    .min(20, "Description must be at least 20 characters.")
-    .max(100, "Description must be at most 100 characters."),
-})
+export { themeFormSchema }
 
 export const ThemeForm = () => {
-  const themeForm = useForm<z.infer<typeof themeFormSchema>>({
+  const form = useForm<ThemeFormValues>({
     resolver: zodResolver(themeFormSchema),
     defaultValues: {
-      title: "Untitled",
-      description: "",
+      primaryColor: DEFAULT_PRIMARY_COLOR,
+      harmonyType: "complementary",
+      headingFont: "system-ui",
+      bodyFont: "system-ui",
+      monoFont: "system-ui",
+      fontScale: 1,
+      borderRadius: "0.5",
+      isDarkMode: undefined,
+      enableDarkMode: false,
+      customAccent: false,
     },
   })
+
+  const [colorResetKey, setColorResetKey] = React.useState(0)
+
+  const colorState = useOklchColor({
+    initial:
+      parseOklchString(form.getValues("primaryColor")) ?? DEFAULT_OKLCH_COLOR,
+    onChange: (color) =>
+      form.setValue("primaryColor", oklchToCss(color), {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+  })
+
+  const primaryColor = colorState.color
+
+  // `getColorHarmonies` runs nine hue-rotation + gamut-fit passes; `primaryColor`
+  // is only a new object when the color actually changes (see useOklchColor),
+  // so this avoids recomputing whenever this component re-renders for an
+  // unrelated reason.
+  const harmonies = React.useMemo(
+    () => getColorHarmonies(primaryColor),
+    [primaryColor]
+  )
+
+  const accentColorState = useOklchColor({
+    initial: parseOklchString(form.getValues("accentColor") ?? "") ?? undefined,
+    onChange: (color) =>
+      form.setValue("accentColor", oklchToCss(color), {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+  })
+
   function onSubmit(data: z.infer<typeof themeFormSchema>) {
-    toast("You submitted the following values:", {
+    const { theme, cssVariables, report } = compile(
+      toThemeCompilationInput(data)
+    )
+
+    if (!report.success || !theme) {
+      toast.error("Theme compilation failed", {
+        description: report.errors.join(", "),
+        position: "bottom-right",
+      })
+      return
+    }
+
+    if (report.warnings.length > 0) {
+      toast.warning("Theme compiled with warnings", {
+        description: report.warnings.join(", "),
+        position: "bottom-right",
+      })
+    }
+
+    toast("Theme configuration saved:", {
       description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>{JSON.stringify(data, null, 2)}</code>
+        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground text-xs">
+          <code>{JSON.stringify({ theme, cssVariables }, null, 2)}</code>
         </pre>
       ),
       position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
     })
   }
 
   return (
-    <div className="space-y-6">
-      <form id="form-theme-form" onSubmit={themeForm.handleSubmit(onSubmit)}>
-        <FieldGroup>
-          <Controller
-            name="title"
-            control={themeForm.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-theme-title">Theme title</FieldLabel>
-                <InputGroupInput
-                  {...field}
-                  id="form-theme-title"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Untitled Theme"
-                  min={2}
-                  max={20}
-                  defaultValue={"Untitled"}
-                  autoComplete="off"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-          <Controller
-            name="description"
-            control={themeForm.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-theme-description">
-                  Description
-                </FieldLabel>
-                <InputGroup>
-                  <InputGroupTextarea
+    <div className="space-y-6 px-2 py-4">
+      <form id="form-theme" onSubmit={form.handleSubmit(onSubmit)}>
+        {/* <FieldGroup className="space-y-4"> */}
+        <FieldGroup className="space-y-4">
+          {/* <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="theme-name">Name</FieldLabel>
+                  <InputGroupInput
                     {...field}
-                    id="form-theme-description"
-                    placeholder="Describe your theme..."
-                    rows={6}
-                    className="min-h-24 resize-none"
-                    required={false}
-                    maxLength={100}
-                    autoComplete="off"
+                    id="theme-name"
                     aria-invalid={fieldState.invalid}
+                    placeholder="Untitled"
+                    maxLength={64}
                   />
-                  <InputGroupAddon align="block-end">
-                    <InputGroupText className="tabular-nums">
-                      {field.value.length}/100 characters
-                    </InputGroupText>
-                  </InputGroupAddon>
-                </InputGroup>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="theme-description">
+                    Description
+                  </FieldLabel>
+                  <InputGroup>
+                    <InputGroupTextarea
+                      {...field}
+                      id="theme-description"
+                      placeholder="Describe your theme..."
+                      rows={3}
+                      className="min-h-20 resize-none"
+                      maxLength={256}
+                    />
+                    <InputGroupAddon align="block-end">
+                      <InputGroupText className="tabular-nums text-xs">
+                        {field.value?.length || 0}/256
+                      </InputGroupText>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+              )}
+            />
+          </FieldGroup>
+
+          <div className="flex gap-4">
+            <div className="flex flex-col flex-1">
+              <Controller
+                name="tags"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel htmlFor="theme-tags">Tags</FieldLabel>
+                    <TagsInput
+                      field={{
+                        ...field,
+                        value: field.value || [],
+                      }}
+                    />
+                    <FieldDescription>
+                      Comma-separated tags for organization
+                    </FieldDescription>
+                  </Field>
                 )}
-              </Field>
-            )}
-          />
+              />
+            </div> */}
+          <div className="flex">
+            <CustomAccentToggle
+              control={form.control}
+              setValue={form.setValue}
+              accentColorState={accentColorState}
+            />
+            <AppearanceFields control={form.control} setValue={form.setValue} />
+          </div>
+          {/* </div> */}
+
+          <FieldGroup>
+            <div className="grid grid-cols-1 gap-4 w-full">
+              <PrimaryColorField
+                control={form.control}
+                colorState={colorState}
+                colorResetKey={colorResetKey}
+              />
+            </div>
+
+            <AccentColorPicker
+              control={form.control}
+              primaryColor={primaryColor}
+              harmonies={harmonies}
+              accentColorState={accentColorState}
+            />
+          </FieldGroup>
+
+          <TypographyFields control={form.control} />
+
+          <BorderRadiusField control={form.control} />
         </FieldGroup>
       </form>
-      <Field orientation="horizontal">
+
+      <Field
+        orientation="horizontal"
+        className="gap-2 pt-4 border-t border-border"
+      >
         <Button
           type="button"
           variant="outline"
-          onClick={() => themeForm.reset()}
+          onClick={() => {
+            form.reset()
+            setColorResetKey((key) => key + 1)
+          }}
         >
           Reset
         </Button>
-        <Button type="submit" form="form-theme-form">
-          Submit
+        <Button type="submit" form="form-theme" className="flex-1">
+          Save Theme
         </Button>
       </Field>
     </div>
