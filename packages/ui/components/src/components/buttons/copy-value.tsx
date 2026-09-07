@@ -1,72 +1,92 @@
 "use client"
 
-import type { ReactNode } from "react"
+import type {
+  ComponentPropsWithoutRef,
+  MouseEventHandler,
+  ReactNode,
+} from "react"
 import { cn } from "@repo/ui-components/lib/utils"
 import React from "react"
 import { CheckIcon, ClipboardIcon } from "lucide-react"
 
-type CopyButtonProps = {
+type CopyButtonProps = Omit<
+  ComponentPropsWithoutRef<"button">,
+  "children" | "onClick" | "type" | "value"
+> & {
   value: string
   children?: ReactNode
-  className?: string
   label?: string
-  title?: string
   render?: (copied: boolean) => ReactNode
+  onClick?: MouseEventHandler<HTMLButtonElement>
 }
 
-export function CopyButton({
-  value,
-  children,
-  className,
-  label,
-  title,
-  render,
-}: CopyButtonProps) {
-  const [copied, setCopied] = React.useState(false)
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+export const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
+  function CopyButton(
+    {
+      value,
+      children,
+      className,
+      label,
+      title,
+      style,
+      render,
+      onClick,
+      ...buttonProps
+    },
+    ref
+  ) {
+    const [copied, setCopied] = React.useState(false)
+    const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  React.useEffect(() => {
-    if (copied) {
-      timeoutRef.current = setTimeout(() => {
-        setCopied(false)
-      }, 2000)
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [copied])
-  return (
-    <button
-      type="button"
-      title={title}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value)
-          // eslint-disable-next-line no-console
-          console.log(`Copied ${label ?? "value"}`, { description: value })
-        } catch {
-          // toast.error("Couldn't copy to clipboard")
-          console.error("Couldn't copy to clipboard")
+    React.useEffect(() => {
+      if (copied) {
+        timeoutRef.current = setTimeout(() => {
           setCopied(false)
-          return
+        }, 2000)
+      }
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
         }
-        setCopied(true)
-      }}
-      className={cn(
-        "cursor-pointer text-left transition-opacity hover:opacity-70 active:opacity-50",
-        className
-      )}
-    >
-      {(render ? render(copied) : children) ?? (
-        <ClipboardStatusIcon copied={copied} value={value}>
-          <ClipboardIcon className="size-4 shrink-0" />
-        </ClipboardStatusIcon>
-      )}
-    </button>
-  )
-}
+      }
+    }, [copied])
+
+    return (
+      <button
+        {...buttonProps}
+        ref={ref}
+        type="button"
+        title={title}
+        onClick={async (event) => {
+          onClick?.(event)
+          if (event.defaultPrevented) return
+
+          try {
+            await navigator.clipboard.writeText(value)
+            // eslint-disable-next-line no-console
+            console.log(`Copied ${label ?? "value"}`, { description: value })
+            setCopied(true)
+          } catch {
+            // toast.error("Couldn't copy to clipboard")
+            console.error("Couldn't copy to clipboard")
+            setCopied(false)
+          }
+        }}
+        className={cn(
+          "cursor-pointer text-left transition-opacity hover:opacity-70 active:opacity-50",
+          className
+        )}
+        style={style}
+      >
+        {(render ? render(copied) : children) ?? (
+          <ClipboardStatusIcon copied={copied} value={value}>
+            <ClipboardIcon className="size-4 shrink-0" style={style} />
+          </ClipboardStatusIcon>
+        )}
+      </button>
+    )
+  }
+)
 
 function ClipboardStatusIcon({
   children,

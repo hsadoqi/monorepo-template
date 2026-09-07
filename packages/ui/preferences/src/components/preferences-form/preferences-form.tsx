@@ -156,7 +156,7 @@ export function PreferencesForm() {
       </div>
 
       <Tabs
-        defaultValue="preferences"
+        defaultValue="appearance"
         className="w-full"
         orientation="horizontal"
       >
