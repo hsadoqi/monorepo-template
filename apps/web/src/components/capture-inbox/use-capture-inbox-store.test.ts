@@ -76,9 +76,7 @@ describe("useCaptureInboxStore", () => {
     useCaptureInboxStore.getState().tag(first!.id, "note")
 
     const items = useCaptureInboxStore.getState().items
-    expect(items.find((item) => item.id === first!.id)?.status).toBe(
-      "archived"
-    )
+    expect(items.find((item) => item.id === first!.id)?.status).toBe("archived")
     expect(items.find((item) => item.id === second!.id)?.status).toBe(
       "unsorted"
     )

@@ -6,9 +6,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "references": [
-    { "path": "../../packages/ui/theme/tsconfig.json" }
-  ],
+  "references": [{ "path": "../../packages/ui/theme/tsconfig.json" }],
   "include": [
     "src",
     "next-env.d.ts",

@@ -123,9 +123,7 @@ export function QuickCaptureCard() {
               Nothing to sort
             </p>
           ) : (
-            unsortedItems.map((item) => (
-              <TriageRow key={item.id} item={item} />
-            ))
+            unsortedItems.map((item) => <TriageRow key={item.id} item={item} />)
           )}
         </div>
       )}
