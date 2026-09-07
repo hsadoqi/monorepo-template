@@ -51,7 +51,9 @@ next-env.d.ts
 .serena
 .remember
 .claude
-.github
-!.github/workflows
 AGENTS.md
 PRODUCT.md
+.github/copilot-instructions.md
+.github/skills
+.github/agents
+.github/hooks

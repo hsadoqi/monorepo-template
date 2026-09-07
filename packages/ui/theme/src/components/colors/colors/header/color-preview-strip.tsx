@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
 } from "@repo/ui-components/base/tooltip"
 import { CopyButton } from "@repo/ui-components/buttons/copy-value"
-import { deriveScaleCss, SCALE_STEPS, ScaleStep } from "@/utils/shade-generation"
+import { deriveScaleCss, SCALE_STEPS, ScaleStep } from "../../../../utils/shade-generation"
 import { getIconForeground, type Oklch } from "@repo/domain-theme"
 
 export type ColorPreviewStripProps = {

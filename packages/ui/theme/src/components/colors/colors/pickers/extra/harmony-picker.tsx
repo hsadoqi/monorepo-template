@@ -6,7 +6,7 @@ import {
   autoForeground,
   getHarmonies,
   type ColorHarmony,
-} from "@/utils/shade-generation"
+} from "../../../../../utils/shade-generation"
 import { cn } from "@repo/ui-components/lib/utils"
 import React from "react"
 

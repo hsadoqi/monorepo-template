@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@repo/ui-components/base/collapsible"
-import { buildChannelGradient } from "@/utils/build-channel-gradient"
+import { buildChannelGradient } from "../../../../utils/build-channel-gradient"
 import { ChannelSlider } from "./channel-slider"
 import { SpectrumPicker } from "./spectrum-picker"
 

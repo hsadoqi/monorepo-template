@@ -12,6 +12,8 @@ export const baseConfig = defineConfig({
     restoreMocks: true,
   },
   resolve: {
+    tsconfigPaths: true,
     alias: {},
   },
+
 })

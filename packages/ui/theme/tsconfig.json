@@ -7,11 +7,6 @@
     "composite": true,
     "incremental": true,
     "moduleResolution": "bundler",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/utils/*": ["./src/utils/*"],
-      "@/components/*": ["./src/components/*"]
-    },
     "target": "es2024",
     "lib": ["es2024", "dom", "dom.iterable", "dom.asynciterable"],
     "jsx": "react-jsx"

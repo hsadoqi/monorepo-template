@@ -147,7 +147,7 @@ export function PreferencesForm() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-8 px-4">
+    <div className="w-full flex-1 flex flex-col space-y-6 mx-auto py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-2">
@@ -160,7 +160,7 @@ export function PreferencesForm() {
         className="w-full"
         orientation="horizontal"
       >
-        <TabsList className="flex w-full">
+        <TabsList className="flex w-full max-w-4xl">
           <TabsTrigger value="appearance" className="gap-2">
             <HugeiconsIcon icon={Palette} className="size-4" />
             <span className="hidden sm:inline">Appearance</span>

@@ -31,7 +31,7 @@ import { ColorPreviewStrip } from "../colors"
 import {
   SpectrumChannelsPanel,
   SpectrumChannelsPanelMemo,
-} from "@/components/colors/colors/pickers/spectrum-channels-panel"
+} from "../../components/colors/colors/pickers/spectrum-channels-panel"
 import type { UseOklchColorReturn } from "../../hooks/use-oklch-color"
 import type { ThemeFormValues } from "./theme-form-schema"
 
