@@ -4,7 +4,6 @@ import {
   CheckmarkCircle02Icon,
   Clock01Icon,
   Folder02Icon,
-  InboxIcon,
   MoreHorizontalIcon,
   PlusSignIcon,
   Search01Icon,
@@ -16,6 +15,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
 import { Input } from "@repo/ui-components/base/input"
 import { Badge } from "@repo/ui-components/base/badge"
+
+import { QuickCaptureCard } from "./quick-capture-card"
 
 const projects = [
   {
@@ -145,33 +146,7 @@ export default function Page() {
           </Button>
         </div>
 
-        <div className="border-border bg-muted/40 flex flex-col gap-5 rounded-xl border p-5 md:p-6">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-semibold">Quick capture</h2>
-            <p className="text-muted-foreground text-sm">
-              Get it out of your head. Sort it later.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <Input
-              placeholder="What needs your attention?"
-              aria-label="Capture a new task"
-            />
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground text-xs">
-                Press Enter to save
-              </span>
-              <Button size="sm">Capture</Button>
-            </div>
-          </div>
-          <div className="border-border text-muted-foreground flex items-center gap-2 border-t pt-4 text-xs">
-            <HugeiconsIcon icon={InboxIcon} />
-            <span>4 unsorted items</span>
-            <Button variant="link" size="sm" className="ml-auto h-auto p-0">
-              Review
-            </Button>
-          </div>
-        </div>
+        <QuickCaptureCard />
       </section>
 
       <section className="border-border grid gap-8 border-t pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.55fr)]">
