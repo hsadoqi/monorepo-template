@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import { toast } from "sonner"
+import { feedbackToast } from "@repo/ui-components/components/feedback"
 import {
   fitToGamut,
   generateShades,
@@ -206,7 +206,7 @@ export function useOklchColor(
       return
     }
     setHexText(hex)
-    toast.error("Not a valid hex color")
+    feedbackToast.error("Not a valid hex color")
   }
 
   function commitCss() {
@@ -217,7 +217,7 @@ export function useOklchColor(
       return
     }
     setCssText(css)
-    toast.error("Not a valid oklch() value")
+    feedbackToast.error("Not a valid oklch() value")
   }
 
   function commitRgb() {
@@ -227,7 +227,7 @@ export function useOklchColor(
       return
     }
     setRgbText(rgbCss)
-    toast.error("Not a valid rgb() value")
+    feedbackToast.error("Not a valid rgb() value")
   }
 
   function randomize() {

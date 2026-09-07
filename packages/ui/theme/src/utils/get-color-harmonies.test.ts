@@ -27,6 +27,9 @@ describe("getColorHarmonies", () => {
     const base = { l: 0.42, c: 0.18, h: 90 }
     const harmonies = getColorHarmonies(base)
     for (const harmony of harmonies) {
+      // Monochromatic is exempt: varying lightness across the seed's hue is
+      // its whole point, not a gamut-fit side effect.
+      if (harmony.type === "monochromatic") continue
       for (const color of harmony.colors) {
         expect(color.l).toBe(base.l)
         expect(color.c).toBeLessThanOrEqual(base.c + 1e-9)
@@ -45,7 +48,10 @@ describe("getColorHarmonies", () => {
       "triadic",
       "split-complementary",
       "tetradic",
+      "square",
       "rectangle",
+      "double-split-complementary",
+      "monochromatic",
     ])
   })
 

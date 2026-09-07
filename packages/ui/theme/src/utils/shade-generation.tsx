@@ -229,10 +229,10 @@ export function deriveScaleCss(
  *
  * Delegates to the domain's single `generateHarmony` rather than rotating
  * hues independently — this function and `get-color-harmonies.ts` used to
- * implement divergent, non-gamut-fit geometry (finding #5/#12): this one
- * never generated "rectangle" while the other did, and neither gamut-fit
- * the rotated colors. Both now share one source; "rectangle" is included
- * here so the two no longer disagree on which types they support.
+ * implement divergent, non-gamut-fit geometry (finding #5/#12). Both now
+ * share one source and must expose the same type list in the same order
+ * (see shade-generation.test.ts's "no longer diverge" regression suite) —
+ * keep this in sync with `get-color-harmonies.ts` when adding a type.
  */
 export type HarmonyType =
   | "complementary"
@@ -240,7 +240,10 @@ export type HarmonyType =
   | "triadic"
   | "split-complementary"
   | "tetradic"
+  | "square"
   | "rectangle"
+  | "double-split-complementary"
+  | "monochromatic"
 
 export type ColorHarmony = {
   type: HarmonyType
@@ -273,13 +276,28 @@ const HARMONY_DESCRIPTORS: Record<
     name: "Tetradic",
     description: "Four hues at 90° intervals — rich palette",
   },
+  square: {
+    name: "Square",
+    description: "Four evenly spaced hues — balanced and energetic",
+  },
   rectangle: {
     name: "Rectangle",
     description: "Two complementary pairs — complex but balanced",
   },
+  "double-split-complementary": {
+    name: "Double Split Complementary",
+    description: "Two nearby pairs around the complement — nuanced contrast",
+  },
+  monochromatic: {
+    name: "Monochromatic",
+    description: "One hue across lightness — focused and cohesive",
+  },
 }
 
-function harmonyColorsExcludingSeed(base: Oklch, type: HarmonyType): Oklch[] {
+function harmonyColorsExcludingSeed(
+  base: Oklch,
+  type: Exclude<HarmonyType, "monochromatic">
+): Oklch[] {
   const offsets = HARMONY_HUE_OFFSETS[type]
   const colors = generateHarmony(base, type)
   return offsets
@@ -295,14 +313,19 @@ export function getHarmonies(base: Oklch): ColorHarmony[] {
     "triadic",
     "split-complementary",
     "tetradic",
+    "square",
     "rectangle",
+    "double-split-complementary",
+    "monochromatic",
   ]
   return types.map((type) => {
     const colors =
-      type === "analogous"
-        ? // Existing shipped contract: [+30, -30] order (positive offset first).
-          [...harmonyColorsExcludingSeed(base, type)].reverse()
-        : harmonyColorsExcludingSeed(base, type)
+      type === "monochromatic"
+        ? generateHarmony(base, type)
+        : type === "analogous"
+          ? // Existing shipped contract: [+30, -30] order (positive offset first).
+            [...harmonyColorsExcludingSeed(base, type)].reverse()
+          : harmonyColorsExcludingSeed(base, type)
     return { type, ...HARMONY_DESCRIPTORS[type], colors }
   })
 }
