@@ -1,9 +1,13 @@
 import { mergeConfig } from "vitest/config"
+import { fileURLToPath } from "node:url"
 
 import { baseConfig } from "@repo/foundation-vitest-config/base"
 
 export default mergeConfig(baseConfig, {
   resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
     dedupe: ["react", "react-dom"],
   },
   oxc: {

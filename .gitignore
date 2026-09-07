@@ -50,4 +50,6 @@ next-env.d.ts
 .history
 .serena
 .remember
-.claude/settings.json
+.claude
+.github
+!.github/workflows

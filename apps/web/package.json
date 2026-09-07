@@ -35,21 +35,23 @@
     "@repo/ui-theme": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "cn": "^0.2.6",
     "lucide-react": "^1.39.0",
     "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.5.4"
   },
-  "peerDependencies": {},
+  "sideEffects": false,
   "devDependencies": {
     "@repo/foundation-eslint-config": "workspace:*",
     "@repo/foundation-prettier-config": "workspace:*",
+    "@repo/foundation-test-mocks": "workspace:*",
     "@repo/foundation-typescript-config": "workspace:*",
     "@repo/foundation-vitest-config": "workspace:*",
     "@repo/foundation-vitest-utils": "workspace:*",
-    "@repo/foundation-test-mocks": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
@@ -58,6 +60,5 @@
     "eslint": "^9",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"
-  },
-  "sideEffects": false
+  }
 }

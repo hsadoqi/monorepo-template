@@ -24,10 +24,12 @@
     "@repo/ui-design-system": "workspace:*",
     "@repo/shared-utils": "workspace:*",
     "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
     "lucide-react": "^1.39.0",
     "react-resizable-panels": "^4.12.3",
     "clsx": "^2.1.1",
     "shiki": "^4.4.3",
+    "sonner": "^2.0.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },
@@ -61,6 +63,7 @@
     "./lib/*": "./src/lib/*.ts",
     "./base": "./src/base/ui/index.ts",
     "./base/*": "./src/base/ui/*.tsx",
+    "./components/feedback": "./src/components/feedback/index.ts",
     "./hooks/*": "./src/hooks/*.ts"
   }
 }
