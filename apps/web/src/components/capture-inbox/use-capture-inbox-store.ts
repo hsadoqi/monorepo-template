@@ -34,65 +34,85 @@ function getCaptureInboxStorage() {
   }
 }
 
-export const useCaptureInboxStore = create<CaptureInboxState>()(
-  persist<CaptureInboxState, [], [], PersistedCaptureInboxState>(
-    (set, get) => ({
-      items: [],
-      capture: (text) => {
-        const trimmed = text.trim()
-        if (!trimmed) return
-        const item: CaptureItem = {
-          id: crypto.randomUUID(),
-          text: trimmed,
-          createdAt: new Date().toISOString(),
-          status: "unsorted",
+export function createCaptureInboxStore(version: number) {
+  return create<CaptureInboxState>()(
+    persist<CaptureInboxState, [], [], PersistedCaptureInboxState>(
+      (set, get) => {
+        function setItems(items: CaptureItem[]) {
+          try {
+            set({ items })
+          } catch (error) {
+            console.warn("Failed to persist capture inbox state:", error)
+          }
         }
-        set({ items: [...get().items, item] })
-      },
-      tag: (id, tag) => {
-        set({
-          items: get().items.map((item) =>
-            item.id === id ? { ...item, status: "archived", tag } : item
-          ),
-        })
-      },
-      archive: (id) => {
-        set({
-          items: get().items.map((item) =>
-            item.id === id
-              ? { ...item, status: "archived", tag: undefined }
-              : item
-          ),
-        })
-      },
-      delete: (id) => {
-        set({ items: get().items.filter((item) => item.id !== id) })
-      },
-    }),
-    createPersistOptions<CaptureInboxState, PersistedCaptureInboxState>({
-      name: "capture-inbox-store",
-      version: 1,
-      getStorage: getCaptureInboxStorage,
-      migrate: (persistedState) => {
-        const result =
-          captureInboxPersistedStateSchema.safeParse(persistedState)
-        if (!result.success) {
-          console.warn("Failed to restore capture inbox state:", result.error)
-          return { items: [] }
+
+        return {
+          items: [],
+          capture: (text) => {
+            const trimmed = text.trim()
+            if (!trimmed) return
+            const item: CaptureItem = {
+              id: crypto.randomUUID(),
+              text: trimmed,
+              createdAt: new Date().toISOString(),
+              status: "unsorted",
+            }
+            setItems([...get().items, item])
+          },
+          tag: (id, tag) => {
+            setItems(
+              get().items.map((item) =>
+                item.id === id ? { ...item, status: "archived", tag } : item
+              )
+            )
+          },
+          archive: (id) => {
+            setItems(
+              get().items.map((item) =>
+                item.id === id
+                  ? { ...item, status: "archived", tag: undefined }
+                  : item
+              )
+            )
+          },
+          delete: (id) => {
+            setItems(get().items.filter((item) => item.id !== id))
+          },
         }
-        return result.data
       },
-      partialize: (state) => ({ items: state.items }),
-      merge: (persistedState, currentState) => {
-        const result =
-          captureInboxPersistedStateSchema.safeParse(persistedState)
-        if (!result.success) {
-          console.warn("Failed to restore capture inbox state:", result.error)
-          return currentState
-        }
-        return { ...currentState, items: result.data.items }
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }) as any
+      createPersistOptions<CaptureInboxState, PersistedCaptureInboxState>({
+        name: "capture-inbox-store",
+        version,
+        getStorage: getCaptureInboxStorage,
+        migrate: (persistedState) => {
+          const result =
+            captureInboxPersistedStateSchema.safeParse(persistedState)
+          if (!result.success) {
+            console.warn(
+              "Failed to restore capture inbox state:",
+              result.error
+            )
+            return { items: [] }
+          }
+          return result.data
+        },
+        partialize: (state) => ({ items: state.items }),
+        merge: (persistedState, currentState) => {
+          const result =
+            captureInboxPersistedStateSchema.safeParse(persistedState)
+          if (!result.success) {
+            console.warn(
+              "Failed to restore capture inbox state:",
+              result.error
+            )
+            return currentState
+          }
+          return { ...currentState, items: result.data.items }
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any
+    )
   )
-)
+}
+
+export const useCaptureInboxStore = createCaptureInboxStore(1)

@@ -16,7 +16,13 @@ import type {
 
 const TAG_OPTIONS: readonly CaptureTag[] = ["task", "note", "reference"]
 
-function TriageRow({ item, position }: { item: CaptureItem; position: number }) {
+function TriageRow({
+  item,
+  position,
+}: {
+  item: CaptureItem
+  position: number
+}) {
   const tag = useCaptureInboxStore((state) => state.tag)
   const archive = useCaptureInboxStore((state) => state.archive)
   const deleteItem = useCaptureInboxStore((state) => state.delete)
@@ -71,7 +77,6 @@ export function QuickCaptureCard() {
   const unsortedCount = unsortedItems.length
   // const unsortedItems = useCaptureInboxStore((state) => state.items.filter((item) => item.status === "unsorted"))
   // const unsortedCount = unsortedItems.length
-
 
   function handleCapture() {
     if (!draft.trim()) return
