@@ -1200,6 +1200,9 @@ importers:
       '@repo/foundation-vitest-utils':
         specifier: workspace:*
         version: link:../../foundation/testing/vitest-utils
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@turbo/gen':
         specifier: ^2.9.15
         version: 2.10.12(@types/node@26.4.0)

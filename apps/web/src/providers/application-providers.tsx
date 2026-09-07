@@ -86,7 +86,7 @@ import { AppearanceBridge } from "./appearance-bridge"
 import { useResolvedAppearance } from "../hooks/use-resolved-appearance"
 
 import { PreferencesPersistence } from "../preferences/preferences-persistence"
-import { ClientApplicationProvider } from "./client-application-providers"
+import { UiApplicationProvider } from "./ui-application-providers"
 import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from "../app/theme-definitions"
 // import { ThemeToggleHotkey } from "@repo/ui-theme/components"
 export interface ApplicationProvidersProps {
@@ -140,7 +140,7 @@ function RootThemeScope({ children }: { children: ReactNode }) {
  * Root application providers component.
  *
  * Composes all foundational providers needed for the app to run:
- * - ClientApplicationProvider: Framework-specific setup
+ * - UiApplicationProvider: Tooltip/sidebar/toast UI chrome
  * - PreferencesProvider: Global preferences state (dark mode, custom colors, etc.)
  * - RootThemeScope: Theme compilation and appearance resolution
  * - AppearanceBridge: System appearance detection (light/dark)
@@ -177,10 +177,10 @@ export function ApplicationProviders({
       >
         <PreferencesProvider initialPreferences={initialPreferences}>
           <RootThemeScope>
-            <ClientApplicationProvider>
+            <UiApplicationProvider>
               <PreferencesPersistence />
               <AppearanceBridge>{children}</AppearanceBridge>
-            </ClientApplicationProvider>
+            </UiApplicationProvider>
           </RootThemeScope>
         </PreferencesProvider>
       </ThemeRegistryProvider>

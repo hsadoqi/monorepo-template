@@ -1,7 +1,7 @@
 "use client"
 
 import { Oklch } from "@repo/domain-theme"
-import { cn } from "@repo/ui-components/lib/index"
+import { cn } from "@repo/ui-components/lib/utils"
 import React, { useMemo, useState } from "react"
 import { getHarmonies, HarmonyType } from "../../../../utils/shade-generation"
 

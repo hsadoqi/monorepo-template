@@ -7,8 +7,8 @@ export const metadata = {
 
 export default function SettingsPage() {
   return (
-    <div className="flex flex-col gap-4 flex-1 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-2 mx-auto bg-card p-4 sm:p-6 lg:p-8 rounded-lg shadow w-full max-w-5xl flex-1">
+    <div className="flex flex-1 flex-col gap-4 p-4 sm:p-6 lg:p-8">
+      <div className="bg-card mx-auto flex w-full max-w-5xl flex-1 flex-col gap-2 rounded-lg p-4 shadow sm:p-6 lg:p-8">
         <PreferencesForm />
       </div>
     </div>

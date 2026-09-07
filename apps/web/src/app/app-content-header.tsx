@@ -38,9 +38,11 @@ export const AppContentHeader = () => {
             <SheetContent className="gap-0 overflow-hidden">
               <SheetHeader className="shrink-0">
                 <Collapsible>
-                  <CollapsibleTrigger className="border-border/80 bg-background/95 w-full rounded-t-lg border-b text-left backdrop-blur">
-                    <div className="flex items-center justify-between gap-2">
-                      Untitled Theme
+                  <CollapsibleTrigger className="border-border/80 bg-background/95 w-full rounded-t-lg border-b text-left backdrop-blur py-2">
+                    <div className="flex items-center justify-between gap-2 pl-4">
+                      <h1>
+                        Untitled Theme
+                      </h1>
                     </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="border-border/80 bg-background/95 border-b px-6 py-4 backdrop-blur">

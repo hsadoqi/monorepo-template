@@ -15,5 +15,4 @@ export const baseConfig = defineConfig({
     tsconfigPaths: true,
     alias: {},
   },
-
 })

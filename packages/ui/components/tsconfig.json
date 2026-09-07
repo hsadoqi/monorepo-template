@@ -13,11 +13,8 @@
   },
   "include": [
     "src",
-    "@types/node",
-    "@types/react",
-    "@types/react-dom",
     "**/*.d.ts",
     "**/*.d.tsx"
   ],
-  "exclude": ["node_modules", "dist", ".archives"]
+  "exclude": ["node_modules", "dist", ".archives", "coverage", ".turbo"]
 }

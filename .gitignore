@@ -57,3 +57,6 @@ PRODUCT.md
 .github/skills
 .github/agents
 .github/hooks
+.codex
+.agents
+scripts

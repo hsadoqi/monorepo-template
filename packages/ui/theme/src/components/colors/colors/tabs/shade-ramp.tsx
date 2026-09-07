@@ -5,7 +5,7 @@ import {
   oklchToCss,
   type Shade,
 } from "@repo/domain-theme"
-import { cn } from "@repo/ui-components/lib/index"
+import { cn } from "@repo/ui-components/lib/utils"
 import { CopyButton } from "@repo/ui-components/buttons/copy-value"
 import {
   Tooltip,

@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@repo/ui-components/lib/index"
+import { cn } from "@repo/ui-components/lib/utils"
 import React, { useState } from "react"
 
 export type TypographyInput = {

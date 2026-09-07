@@ -48,14 +48,11 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       lang={storedLanguage}
       className={cn(
         "antialiased",
-        // fontMono.variable,
         "font-sans",
-        // inter.variable,
-        // geist.variable,
         raleway.variable,
         ibmPlexSans.variable,
         geistMono.variable,
-        "min-h-svh w-full max-w-full overflow-x-hidden",
+        "min-h-svh w-full max-w-full overflow-x-hidden relative bg-background text-foreground",
         {
           dark: explicitAppearance === "dark",
           light: explicitAppearance === "light",

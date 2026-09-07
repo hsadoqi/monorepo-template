@@ -1,7 +1,7 @@
 "use client"
 
 import type { Oklch } from "@repo/domain-theme"
-import { cn } from "@repo/ui-components/lib/index"
+import { cn } from "@repo/ui-components/lib/utils"
 import {
   HUE_PRESETS,
   autoForeground,

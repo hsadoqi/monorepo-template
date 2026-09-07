@@ -11,6 +11,6 @@
     },
     "types": ["react", "react-dom", "vitest/globals", "node"]
   },
-  "include": ["src", "@types/**/*.d.ts"],
+  "include": ["src", "@types/**/*.d.ts", "*.ts", "*.tsx", "vitest.setup.ts"],
   "exclude": ["node_modules", "dist", ".archives/"]
 }
