@@ -2,7 +2,7 @@
 
 import { createScopeStore, type CreateScopeStoreOptions } from "./scope-store"
 import { ScopeContext } from "./scope-context"
-import { applyCssToElement } from "@repo/adapters-theme-browser"
+import { useThemeApplier } from "../ports/theme-applier"
 import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { useStore } from "zustand"
 import { useThemeCompilation } from ".."
@@ -30,6 +30,7 @@ function ScopeStyleApplier({
   scopeRef: React.RefObject<HTMLDivElement | null>
 }) {
   const { cssVariables } = useThemeCompilation()
+  const applier = useThemeApplier()
 
   useEffect(() => {
     if (!cssVariables || !scopeRef) return
@@ -37,8 +38,8 @@ function ScopeStyleApplier({
     const el = scopeId === "root" ? document.documentElement : scopeRef.current
     if (!el) return
 
-    applyCssToElement(el, cssVariables)
-  }, [scopeId, scopeRef, cssVariables])
+    applier.applyCssToElement(el, cssVariables)
+  }, [scopeId, scopeRef, cssVariables, applier])
 
   return null
 }
@@ -119,7 +120,7 @@ export function ThemeScopeProvider({
         data-theme={
           enableDarkMode ? (isDarkMode ? "dark" : "light") : undefined
         }
-        className="theme-scope-provider w-full bg-background text-foreground"
+        className={`theme-scope-provider w-full bg-background text-foreground ${enableDarkMode ? (isDarkMode ? "dark" : "light") : ""}`}
       >
         {children}
       </div>

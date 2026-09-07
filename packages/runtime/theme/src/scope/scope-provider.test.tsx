@@ -3,24 +3,32 @@ import { hydrateRoot } from "react-dom/client"
 import { renderToString } from "react-dom/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { StateStorage } from "zustand/middleware"
-
-import { applyCssToElement } from "@repo/adapters-theme-browser"
+import type { ReactNode } from "react"
 
 import { useThemeCompilation } from ".."
+import { ThemeApplierProvider, type ThemeApplier } from "../ports/theme-applier"
 import { ThemeScopeProvider } from "./scope-provider"
 import { getScopeStorageKey } from "./scope-store"
 import { useThemeScope } from "./use-theme-scope"
-
-vi.mock("@repo/adapters-theme-browser", () => ({
-  applyCssToElement: vi.fn(),
-}))
 
 vi.mock("..", () => ({
   useThemeCompilation: vi.fn(),
 }))
 
-const mockedApplyCssToElement = vi.mocked(applyCssToElement)
 const mockedUseThemeCompilation = vi.mocked(useThemeCompilation)
+
+const stubApplier: ThemeApplier = {
+  applyCssToElement: vi.fn(),
+}
+const mockedApplyCssToElement = vi.mocked(stubApplier.applyCssToElement)
+
+function withApplier(children: ReactNode) {
+  return (
+    <ThemeApplierProvider applier={stubApplier}>
+      {children}
+    </ThemeApplierProvider>
+  )
+}
 
 function ScopeProbe() {
   const {
@@ -75,16 +83,18 @@ describe("ThemeScopeProvider", () => {
 
   it("renders the scope wrapper and provides its store to children", () => {
     render(
-      <ThemeScopeProvider
-        scopeId="preview"
-        overrides={{ enableDarkMode: true }}
-        options={{
-          sourceId: "base-theme",
-          initialOverrides: { primary: "oklch(50% 0.1 200)" },
-        }}
-      >
-        <ScopeProbe />
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider
+          scopeId="preview"
+          overrides={{ enableDarkMode: true }}
+          options={{
+            sourceId: "base-theme",
+            initialOverrides: { primary: "oklch(50% 0.1 200)" },
+          }}
+        >
+          <ScopeProbe />
+        </ThemeScopeProvider>
+      )
     )
 
     const scope = document.querySelector<HTMLElement>(
@@ -107,12 +117,14 @@ describe("ThemeScopeProvider", () => {
 
   it("reflects store appearance changes on the wrapper", async () => {
     render(
-      <ThemeScopeProvider
-        scopeId="preview"
-        overrides={{ enableDarkMode: true }}
-      >
-        <ScopeProbe />
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider
+          scopeId="preview"
+          overrides={{ enableDarkMode: true }}
+        >
+          <ScopeProbe />
+        </ThemeScopeProvider>
+      )
     )
 
     fireEvent.click(screen.getByRole("button", { name: "Toggle dark mode" }))
@@ -127,12 +139,14 @@ describe("ThemeScopeProvider", () => {
 
   it("omits the appearance attribute when dark mode is disabled", () => {
     render(
-      <ThemeScopeProvider
-        scopeId="preview"
-        overrides={{ enableDarkMode: false }}
-      >
-        <ScopeProbe />
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider
+          scopeId="preview"
+          overrides={{ enableDarkMode: false }}
+        >
+          <ScopeProbe />
+        </ThemeScopeProvider>
+      )
     )
 
     expect(document.getElementById("preview")?.hasAttribute("data-theme")).toBe(
@@ -144,16 +158,18 @@ describe("ThemeScopeProvider", () => {
 
   it("uses top-level provider overrides as the scope's initial state", () => {
     render(
-      <ThemeScopeProvider
-        scopeId="preview"
-        overrides={{
-          primary: "oklch(65% 0.15 240)",
-          enableDarkMode: true,
-          isDarkMode: true,
-        }}
-      >
-        <ScopeProbe />
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider
+          scopeId="preview"
+          overrides={{
+            primary: "oklch(65% 0.15 240)",
+            enableDarkMode: true,
+            isDarkMode: true,
+          }}
+        >
+          <ScopeProbe />
+        </ThemeScopeProvider>
+      )
     )
 
     expect(screen.getByTestId("primary").textContent).toBe(
@@ -168,7 +184,7 @@ describe("ThemeScopeProvider", () => {
       .mockReturnValueOnce("00000000-0000-4000-8000-000000000001")
       .mockReturnValueOnce("00000000-0000-4000-8000-000000000002")
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
-    const element = (
+    const element = withApplier(
       <ThemeScopeProvider scopeId="root">
         <span>Hydrated content</span>
       </ThemeScopeProvider>
@@ -211,13 +227,15 @@ describe("ThemeScopeProvider", () => {
     })
 
     render(
-      <ThemeScopeProvider
-        scopeId="preview"
-        overrides={{ enableDarkMode: true }}
-        options={{ storage }}
-      >
-        <ScopeProbe />
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider
+          scopeId="preview"
+          overrides={{ enableDarkMode: true }}
+          options={{ storage }}
+        >
+          <ScopeProbe />
+        </ThemeScopeProvider>
+      )
     )
 
     await waitFor(() => {
@@ -244,9 +262,11 @@ describe("ThemeScopeProvider", () => {
     } as unknown as ReturnType<typeof useThemeCompilation>)
 
     render(
-      <ThemeScopeProvider scopeId="preview">
-        <span>Scoped content</span>
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider scopeId="preview">
+          <span>Scoped content</span>
+        </ThemeScopeProvider>
+      )
     )
 
     const scope = document.getElementById("preview")
@@ -262,9 +282,11 @@ describe("ThemeScopeProvider", () => {
     } as unknown as ReturnType<typeof useThemeCompilation>)
 
     render(
-      <ThemeScopeProvider scopeId="root">
-        <span>Root content</span>
-      </ThemeScopeProvider>
+      withApplier(
+        <ThemeScopeProvider scopeId="root">
+          <span>Root content</span>
+        </ThemeScopeProvider>
+      )
     )
 
     await waitFor(() => {
@@ -277,20 +299,22 @@ describe("ThemeScopeProvider", () => {
 
   it("keeps sibling scope stores isolated", async () => {
     render(
-      <>
-        <ThemeScopeProvider
-          scopeId="first"
-          overrides={{ enableDarkMode: true }}
-        >
-          <ScopeProbe />
-        </ThemeScopeProvider>
-        <ThemeScopeProvider
-          scopeId="second"
-          overrides={{ enableDarkMode: true }}
-        >
-          <ScopeProbe />
-        </ThemeScopeProvider>
-      </>
+      withApplier(
+        <>
+          <ThemeScopeProvider
+            scopeId="first"
+            overrides={{ enableDarkMode: true }}
+          >
+            <ScopeProbe />
+          </ThemeScopeProvider>
+          <ThemeScopeProvider
+            scopeId="second"
+            overrides={{ enableDarkMode: true }}
+          >
+            <ScopeProbe />
+          </ThemeScopeProvider>
+        </>
+      )
     )
 
     const toggles = screen.getAllByRole("button", { name: "Toggle dark mode" })

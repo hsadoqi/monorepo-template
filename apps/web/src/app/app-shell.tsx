@@ -1,23 +1,19 @@
 "use client"
 
-import { Button } from "@repo/ui-components/base/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@repo/ui-components/base/sheet"
-import { ThemeForm } from "@repo/ui-theme"
+import { SidebarInset } from "@repo/ui-components/base/sidebar"
+import { AppContentHeader } from "./app-content-header"
+import { AppSidebar } from "./app-sidebar"
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-background text-foreground flex min-h-screen w-full flex-col">
-      <Sheet>
-        <SheetTrigger render={<Button>Open Theme</Button>} />
-        <SheetContent>
-          <ThemeForm />
-        </SheetContent>
-      </Sheet>
-      {children}
-    </div>
+    <>
+      <AppSidebar />
+      <SidebarInset>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <AppContentHeader />
+          {children}
+        </div>
+      </SidebarInset>
+    </>
   )
 }

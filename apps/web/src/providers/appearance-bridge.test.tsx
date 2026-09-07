@@ -5,7 +5,6 @@ import { AppearanceBridge } from "./appearance-bridge"
 
 const mockSetPreference = vi.fn()
 const mockSetDarkMode = vi.fn()
-const mockSetGlobalDarkMode = vi.fn()
 let mockPreference: "light" | "dark" | "system" = "system"
 let capturedOnAppearanceChange: ((next: "light" | "dark") => void) | undefined
 
@@ -26,11 +25,6 @@ vi.mock("@repo/runtime-theme", () => ({
     systemAppearance: "light" | "dark"
   ) => (preference === "system" ? systemAppearance : preference),
   useThemeScope: () => ({ setDarkMode: mockSetDarkMode }),
-  useThemeStore: (
-    selector: (state: {
-      setGlobalDarkMode: typeof mockSetGlobalDarkMode
-    }) => unknown
-  ) => selector({ setGlobalDarkMode: mockSetGlobalDarkMode }),
 }))
 
 vi.mock("@repo/adapters-theme-browser", () => ({
@@ -62,7 +56,6 @@ describe("AppearanceBridge (app composition)", () => {
     document.documentElement.removeAttribute("data-theme")
     mockSetPreference.mockClear()
     mockSetDarkMode.mockClear()
-    mockSetGlobalDarkMode.mockClear()
     mockPreference = "system"
     capturedOnAppearanceChange = undefined
   })
@@ -76,13 +69,17 @@ describe("AppearanceBridge (app composition)", () => {
     expect(getByText("child content")).toBeTruthy()
   })
 
-  it("passes the hotkey's requested mode through to the real preferences setter", () => {
+  it("syncs the root scope's dark mode to resolved appearance on mount", () => {
+    mockPreference = "dark"
+    render(<AppearanceBridge>child</AppearanceBridge>)
+    expect(mockSetDarkMode).toHaveBeenCalledWith(true)
+  })
+
+  it("routes the hotkey's requested mode through preference, which the sync effect then applies to the scope", () => {
     mockPreference = "dark"
     render(<AppearanceBridge>child</AppearanceBridge>)
     expect(capturedOnAppearanceChange).toBeDefined()
     capturedOnAppearanceChange?.("light")
-    expect(mockSetDarkMode).toHaveBeenCalledWith(false)
-    expect(mockSetGlobalDarkMode).toHaveBeenCalledWith(false)
     expect(mockSetPreference).toHaveBeenCalledWith("light")
   })
 

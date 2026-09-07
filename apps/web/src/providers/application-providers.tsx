@@ -72,10 +72,14 @@ import { PreferencesProvider } from "@repo/runtime-preferences"
 import type { Preferences } from "@repo/domain-preferences"
 import {
   ThemeScopeProvider,
-  useThemeStore,
   ThemeRegistryProvider,
+  ThemeApplierProvider,
 } from "@repo/runtime-theme"
-// import { applyAppearanceToDocument } from "@repo/adapters-theme-browser"
+
+import {
+  applyAppearanceToDocument,
+  BrowserThemeApplier,
+} from "@repo/adapters-theme-browser"
 import { DEFAULT_PRIMARY_COLOR } from "@repo/domain-theme/colors"
 
 import { AppearanceBridge } from "./appearance-bridge"
@@ -108,19 +112,22 @@ export interface ApplicationProvidersProps {
  */
 function RootThemeScope({ children }: { children: ReactNode }) {
   const resolvedAppearance = useResolvedAppearance()
-  const setDarkMode = useThemeStore((state) => state.setGlobalDarkMode)
-  const darkMode = useThemeStore((state) => state.themes["root"]?.isDarkMode)
 
+  // Keep <html> in sync with the resolved root appearance.
+  // The root scope element and <html> are separate elements, and base
+  // surfaces (<body>) are ancestors of the scope, so they resolve their
+  // semantic color tokens against <html>. Without this, a stale class on
+  // <html> makes <body> (and anything inheriting its color) resolve the
+  // wrong theme even though the scope itself is correct.
   useEffect(() => {
-    setDarkMode(resolvedAppearance === "dark")
-  }, [resolvedAppearance, setDarkMode])
-
+    applyAppearanceToDocument(resolvedAppearance)
+  }, [resolvedAppearance])
   return (
     <ThemeScopeProvider
       scopeId="root"
       overrides={{
         enableDarkMode: true,
-        isDarkMode: darkMode && resolvedAppearance === "dark",
+        isDarkMode: resolvedAppearance === "dark",
         primary: DEFAULT_PRIMARY_COLOR,
       }}
     >
@@ -163,18 +170,20 @@ export function ApplicationProviders({
   }
 
   return (
-    <ThemeRegistryProvider
-      initialThemes={AVAILABLE_THEMES}
-      initialSelectedId={DEFAULT_THEME_ID}
-    >
-      <ClientApplicationProvider>
+    <ThemeApplierProvider applier={BrowserThemeApplier}>
+      <ThemeRegistryProvider
+        initialThemes={AVAILABLE_THEMES}
+        initialSelectedId={DEFAULT_THEME_ID}
+      >
         <PreferencesProvider initialPreferences={initialPreferences}>
           <RootThemeScope>
-            <PreferencesPersistence />
-            <AppearanceBridge>{children}</AppearanceBridge>
+            <ClientApplicationProvider>
+              <PreferencesPersistence />
+              <AppearanceBridge>{children}</AppearanceBridge>
+            </ClientApplicationProvider>
           </RootThemeScope>
         </PreferencesProvider>
-      </ClientApplicationProvider>
-    </ThemeRegistryProvider>
+      </ThemeRegistryProvider>
+    </ThemeApplierProvider>
   )
 }
