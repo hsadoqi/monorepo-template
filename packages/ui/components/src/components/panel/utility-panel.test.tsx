@@ -1,5 +1,5 @@
-import { beforeAll, describe, expect, it } from "vitest"
-import { screen } from "@testing-library/react"
+import { beforeAll, describe, expect, it, vi } from "vitest"
+import { screen, fireEvent } from "@testing-library/react"
 import { renderUi } from "@repo/foundation-vitest-utils/react"
 import { UtilityPanel } from "./utility-panel"
 import type { PanelModule } from "./panel-module"
@@ -40,6 +40,8 @@ describe("UtilityPanel", () => {
         activeModuleIds={["notes"]}
         paneSizes={{}}
         onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -56,6 +58,8 @@ describe("UtilityPanel", () => {
         activeModuleIds={["notes"]}
         paneSizes={{}}
         onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -86,6 +90,8 @@ describe("UtilityPanel", () => {
         activeModuleIds={["notes", "schedule"]}
         paneSizes={{}}
         onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -109,10 +115,52 @@ describe("UtilityPanel", () => {
         activeModuleIds={["notes", "schedule"]}
         paneSizes={{}}
         onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={() => {}}
         onOpenChange={() => {}}
       />
     )
 
     expect(screen.getAllByRole("separator")).toHaveLength(1)
+  })
+
+  it("shows a lock toggle and calls onToggleLock when pressed", () => {
+    const onToggleLock = vi.fn()
+    renderUi(
+      <UtilityPanel
+        isOpen
+        modules={[notesModule]}
+        activeModuleIds={["notes"]}
+        paneSizes={{}}
+        onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={onToggleLock}
+        onOpenChange={() => {}}
+      />
+    )
+    fireEvent.click(screen.getByRole("button", { name: /lock panel/i }))
+    expect(onToggleLock).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not close on outside click or Escape when locked", () => {
+    const onOpenChange = vi.fn()
+    renderUi(
+      <>
+        <UtilityPanel
+          isOpen
+          modules={[notesModule]}
+          activeModuleIds={["notes"]}
+          paneSizes={{}}
+          onPaneSizesChange={() => {}}
+          isLocked
+          onToggleLock={() => {}}
+          onOpenChange={onOpenChange}
+        />
+        <button data-testid="outside-app">outside</button>
+      </>
+    )
+    fireEvent.mouseDown(screen.getByTestId("outside-app"))
+    fireEvent.keyDown(document, { key: "Escape" })
+    expect(onOpenChange).not.toHaveBeenCalled()
   })
 })
