@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "sideEffects": false,
+  "sideEffects": [
+    "**/register.ts"
+  ],
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -29,24 +31,26 @@
     "@repo/foundation-typescript-config": "workspace:*",
     "@repo/foundation-vitest-config": "workspace:*",
     "@repo/foundation-vitest-utils": "workspace:*",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.4.0",
-    "@types/react": "^19.2.18",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.5",
     "eslint": "^9.39.5",
     "fake-indexeddb": "^6.0.0",
     "prettier": "^3.9.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11"
+    "typescript": "^6.0.3"
   },
   "exports": {
     ".": "./src/index.ts",
     "./notes": "./src/notes/index.ts",
+    "./notes/register": "./src/notes/register.ts",
     "./schedule": "./src/schedule/index.ts",
     "./focus": "./src/focus/index.ts",
-    "./files": "./src/files/index.ts"
+    "./focus/register": "./src/focus/register.ts",
+    "./files": "./src/files/index.ts",
+    "./files/register": "./src/files/register.ts"
   }
 }

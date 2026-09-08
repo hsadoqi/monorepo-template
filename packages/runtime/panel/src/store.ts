@@ -3,7 +3,7 @@
 import { createStore } from "zustand"
 import { useStore } from "zustand/react"
 import { persist } from "zustand/middleware"
-import { createPersistOptions } from "@repo/services-zustand"
+import { createPersistOptions, getLocalStorage } from "@repo/services-zustand"
 
 import {
   panelPersistedStateSchema,
@@ -32,23 +32,7 @@ const DEFAULT_PERSISTED_STATE: PanelPersistedState = {
   paneSizes: {},
 }
 
-function getPanelStorage() {
-  if (typeof window === "undefined") return undefined
-  try {
-    const probe = "__panel_storage_test__"
-    window.localStorage.setItem(probe, probe)
-    window.localStorage.removeItem(probe)
-    return window.localStorage
-  } catch {
-    return undefined
-  }
-}
-
-function moveId(
-  ids: string[],
-  id: string,
-  direction: "up" | "down"
-): string[] {
+function moveId(ids: string[], id: string, direction: "up" | "down"): string[] {
   const index = ids.indexOf(id)
   if (index === -1) return ids
   const swapWith = direction === "up" ? index - 1 : index + 1
@@ -64,8 +48,7 @@ export function createPanelStore(version: number) {
       (set) => {
         function safeSet(
           partial:
-            | Partial<PanelState>
-            | ((state: PanelState) => Partial<PanelState>)
+            Partial<PanelState> | ((state: PanelState) => Partial<PanelState>)
         ) {
           try {
             set(partial)
@@ -80,8 +63,7 @@ export function createPanelStore(version: number) {
           open: () => safeSet({ isOpen: true }),
           close: () => safeSet({ isOpen: false }),
           toggleOpen: () => safeSet((state) => ({ isOpen: !state.isOpen })),
-          toggleLock: () =>
-            safeSet((state) => ({ isLocked: !state.isLocked })),
+          toggleLock: () => safeSet((state) => ({ isLocked: !state.isLocked })),
           setPaneSizes: (sizes) => safeSet({ paneSizes: sizes }),
           toggleModuleVisibility: (id) =>
             safeSet((state) => ({
@@ -98,7 +80,7 @@ export function createPanelStore(version: number) {
       createPersistOptions<PanelState, PanelPersistedState>({
         name: "panel-store",
         version,
-        getStorage: getPanelStorage,
+        getStorage: getLocalStorage,
         migrate: (persistedState) => {
           const result = panelPersistedStateSchema.safeParse(persistedState)
           if (!result.success) {

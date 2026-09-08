@@ -24,19 +24,17 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
     "@repo/foundation-eslint-config": "workspace:*",
     "@repo/foundation-prettier-config": "workspace:*",
     "@repo/foundation-typescript-config": "workspace:*",
     "@repo/foundation-vitest-config": "workspace:*",
     "@repo/foundation-vitest-utils": "workspace:*",
     "@types/node": "^26.4.0",
+    "@types/react": "^19.2.8",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11",
     "react": "^19.2.4",
+    "typescript": "^6.0.3",
     "zustand": "^5.0.0"
   }
 }

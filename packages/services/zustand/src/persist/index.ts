@@ -15,3 +15,4 @@ export type {
 } from "./types"
 export { createPersistedStore } from "./create-persisted-store"
 export { createPersistOptions } from "./create-persist-options"
+export { getLocalStorage } from "./get-local-storage"

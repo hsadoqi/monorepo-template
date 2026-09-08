@@ -41,10 +41,7 @@ describe("panelStore", () => {
     panelStore.getState().toggleModuleVisibility("notes")
     panelStore.getState().toggleModuleVisibility("schedule")
     panelStore.getState().reorderModule("schedule", "up")
-    expect(panelStore.getState().activeModuleIds).toEqual([
-      "schedule",
-      "notes",
-    ])
+    expect(panelStore.getState().activeModuleIds).toEqual(["schedule", "notes"])
   })
 
   it("sets pane sizes", () => {

@@ -3,7 +3,7 @@
 import { createStore } from "zustand"
 import { useStore } from "zustand/react"
 import { persist } from "zustand/middleware"
-import { createPersistOptions } from "@repo/services-zustand"
+import { createPersistOptions, getLocalStorage } from "@repo/services-zustand"
 import { z } from "zod"
 
 import { notesPersistedStateSchema } from "@repo/domain-panel/notes"
@@ -43,18 +43,6 @@ const DEFAULT_PERSISTED_STATE: ModulesPersistedState = {
   files: { entities: {}, ids: [] },
 }
 
-function getModulesStorage() {
-  if (typeof window === "undefined") return undefined
-  try {
-    const probe = "__modules_storage_test__"
-    window.localStorage.setItem(probe, probe)
-    window.localStorage.removeItem(probe)
-    return window.localStorage
-  } catch {
-    return undefined
-  }
-}
-
 export function createModulesStore(version: number) {
   return createStore<ModulesState>()(
     persist(
@@ -66,7 +54,7 @@ export function createModulesStore(version: number) {
       createPersistOptions<ModulesState, ModulesPersistedState>({
         name: "panel-modules-store",
         version,
-        getStorage: getModulesStorage,
+        getStorage: getLocalStorage,
         migrate: (persistedState) => {
           const result = modulesPersistedStateSchema.safeParse(persistedState)
           if (!result.success) {
@@ -91,10 +79,11 @@ export function createModulesStore(version: number) {
           }
           return {
             ...currentState,
-            noteEntities: result.data.notes.entities,
-            noteIds: result.data.notes.ids,
-            fileEntities: result.data.files.entities,
-            fileIds: result.data.files.ids,
+            entities: {
+              ...result.data.notes.entities,
+              ...result.data.files.entities,
+            },
+            ids: result.data.notes.ids,
             endTimestamp: result.data.focus.endTimestamp,
             isRunning: result.data.focus.isRunning,
           }

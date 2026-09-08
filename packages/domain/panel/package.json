@@ -9,6 +9,7 @@
     "zod": "^4.5.4"
   },
   "scripts": {
+    "build": "tsc --build",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
     "format": "prettier src --write",
     "format:check": "prettier src --check",
@@ -24,9 +25,7 @@
     "@repo/foundation-vitest-utils": "workspace:*",
     "@types/node": "^26.4.0",
     "eslint": "^9.39.5",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11"
+    "typescript": "^6.0.3"
   },
   "exports": {
     ".": "./src/index.ts",
