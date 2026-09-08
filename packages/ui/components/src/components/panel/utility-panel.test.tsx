@@ -42,6 +42,8 @@ describe("UtilityPanel", () => {
         onPaneSizesChange={() => {}}
         isLocked={false}
         onToggleLock={() => {}}
+        onToggleModuleVisibility={() => {}}
+        onReorderModule={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -60,6 +62,8 @@ describe("UtilityPanel", () => {
         onPaneSizesChange={() => {}}
         isLocked={false}
         onToggleLock={() => {}}
+        onToggleModuleVisibility={() => {}}
+        onReorderModule={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -92,6 +96,8 @@ describe("UtilityPanel", () => {
         onPaneSizesChange={() => {}}
         isLocked={false}
         onToggleLock={() => {}}
+        onToggleModuleVisibility={() => {}}
+        onReorderModule={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -117,6 +123,8 @@ describe("UtilityPanel", () => {
         onPaneSizesChange={() => {}}
         isLocked={false}
         onToggleLock={() => {}}
+        onToggleModuleVisibility={() => {}}
+        onReorderModule={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -135,6 +143,8 @@ describe("UtilityPanel", () => {
         onPaneSizesChange={() => {}}
         isLocked={false}
         onToggleLock={onToggleLock}
+        onToggleModuleVisibility={() => {}}
+        onReorderModule={() => {}}
         onOpenChange={() => {}}
       />
     )
@@ -154,6 +164,8 @@ describe("UtilityPanel", () => {
           onPaneSizesChange={() => {}}
           isLocked
           onToggleLock={() => {}}
+          onToggleModuleVisibility={() => {}}
+          onReorderModule={() => {}}
           onOpenChange={onOpenChange}
         />
         <button data-testid="outside-app">outside</button>
@@ -162,5 +174,54 @@ describe("UtilityPanel", () => {
     fireEvent.mouseDown(screen.getByTestId("outside-app"))
     fireEvent.keyDown(document, { key: "Escape" })
     expect(onOpenChange).not.toHaveBeenCalled()
+  })
+
+  it("lets the user hide a module and reorder the remaining ones via the manage-modules popover", () => {
+    const onToggleModuleVisibility = vi.fn()
+    const onReorderModule = vi.fn()
+    const scheduleModule: PanelModule = {
+      id: "schedule",
+      label: "Schedule",
+      icon: InboxIcon,
+      Content: () => <div>Schedule content</div>,
+    }
+    renderUi(
+      <UtilityPanel
+        isOpen
+        modules={[notesModule, scheduleModule]}
+        activeModuleIds={["notes", "schedule"]}
+        paneSizes={{}}
+        onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={() => {}}
+        onToggleModuleVisibility={onToggleModuleVisibility}
+        onReorderModule={onReorderModule}
+        onOpenChange={() => {}}
+      />
+    )
+    fireEvent.click(screen.getByRole("button", { name: /manage modules/i }))
+    fireEvent.click(screen.getByRole("checkbox", { name: "Schedule" }))
+    expect(onToggleModuleVisibility).toHaveBeenCalledWith("schedule")
+
+    fireEvent.click(screen.getByRole("button", { name: /move schedule up/i }))
+    expect(onReorderModule).toHaveBeenCalledWith("schedule", "up")
+  })
+
+  it("shows an empty-state message when no modules are active", () => {
+    renderUi(
+      <UtilityPanel
+        isOpen
+        modules={[notesModule]}
+        activeModuleIds={[]}
+        paneSizes={{}}
+        onPaneSizesChange={() => {}}
+        isLocked={false}
+        onToggleLock={() => {}}
+        onToggleModuleVisibility={() => {}}
+        onReorderModule={() => {}}
+        onOpenChange={() => {}}
+      />
+    )
+    expect(screen.getByText(/no modules are shown/i)).toBeInTheDocument()
   })
 })
