@@ -43,7 +43,6 @@ export function ContrastIndicator({
   }
 
   const handleChange = (color: Oklch) => {
-    console.log("chosen color", color)
     return onChange ? onChange(color) : null
   }
 

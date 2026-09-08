@@ -88,10 +88,7 @@ export function createCaptureInboxStore(version: number) {
           const result =
             captureInboxPersistedStateSchema.safeParse(persistedState)
           if (!result.success) {
-            console.warn(
-              "Failed to restore capture inbox state:",
-              result.error
-            )
+            console.warn("Failed to restore capture inbox state:", result.error)
             return { items: [] }
           }
           return result.data
@@ -101,10 +98,7 @@ export function createCaptureInboxStore(version: number) {
           const result =
             captureInboxPersistedStateSchema.safeParse(persistedState)
           if (!result.success) {
-            console.warn(
-              "Failed to restore capture inbox state:",
-              result.error
-            )
+            console.warn("Failed to restore capture inbox state:", result.error)
             return currentState
           }
           return { ...currentState, items: result.data.items }

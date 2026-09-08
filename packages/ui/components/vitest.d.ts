@@ -1,6 +1,5 @@
-import 'vitest';
+import "vitest"
 import { TestingLibraryMatchers } from "@repo/foundation-vitest-utils/setup"
-
 
 declare global {
   namespace Vi {

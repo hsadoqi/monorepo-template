@@ -4,7 +4,6 @@ import type { Ref } from "react"
 import {
   GroupImperativeHandle,
   PanelImperativeHandle,
-  PanelSize,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -92,8 +91,7 @@ export const ResizableDrawerWrapper = ({
     panelTwoRef.current?.resize("100%")
   }
 
-  const handleExpand = (prevPanel: number | undefined) => {
-    const remainingSize = 100 - Number(prevPanel || 0)
+  const handleExpand = () => {
     setIsOpen(true)
     panelRef.current?.expand()
     // panelTwoRef.current?.resize();
@@ -114,17 +112,13 @@ export const ResizableDrawerWrapper = ({
           maxSize={"75%"}
           collapsedSize={"0%"}
           collapsible
-          onResize={(
-            panelSize: PanelSize,
-            id: string | number | undefined,
-            prevPanelSize: PanelSize | undefined
-          ) => handleExpand(prevPanelSize?.asPercentage)}
+          onResize={() => handleExpand()}
         >
           <div className="flex h-full items-center justify-center p-6">
             <Button
               className="mb-2"
               onClick={
-                isOpen ? () => handleCollapse() : () => handleExpand(undefined)
+                isOpen ? () => handleCollapse() : () => handleExpand()
               }
             >
               {isOpen ? "Collapse Me!" : "Expand Me!"}
@@ -136,7 +130,7 @@ export const ResizableDrawerWrapper = ({
         <Button
           className="mb-2"
           onClick={
-            isOpen ? () => handleCollapse() : () => handleExpand(undefined)
+            isOpen ? () => handleCollapse() : () => handleExpand()
           }
         >
           {isOpen ? "Collapse Me!" : "Expand Me!"}

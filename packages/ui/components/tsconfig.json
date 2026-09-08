@@ -11,10 +11,6 @@
     },
     "types": ["react", "react-dom", "node"]
   },
-  "include": [
-    "src",
-    "**/*.d.ts",
-    "**/*.d.tsx"
-  ],
+  "include": ["src", "**/*.d.ts", "**/*.d.tsx"],
   "exclude": ["node_modules", "dist", ".archives", "coverage", ".turbo"]
 }

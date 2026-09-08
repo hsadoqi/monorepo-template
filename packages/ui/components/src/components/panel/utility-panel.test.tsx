@@ -23,7 +23,9 @@ describe("UtilityPanel", () => {
         onOpenChange={() => {}}
       />
     )
-    expect(screen.getByTestId("utility-panel-root").textContent).toBe("Notes content")
+    expect(screen.getByTestId("utility-panel-root").textContent).toBe(
+      "Notes content"
+    )
   })
 
   it("sets data-open=false and hides content from the accessibility tree when closed", () => {
@@ -60,7 +62,7 @@ describe("UtilityPanel", () => {
         isOpen
         modules={[notesModule, scheduleModule]}
         activeModuleIds={["notes", "schedule"]}
-        onOpenChange={() => { }}
+        onOpenChange={() => {}}
       />
     )
 

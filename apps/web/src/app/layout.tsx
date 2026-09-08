@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         raleway.variable,
         ibmPlexSans.variable,
         geistMono.variable,
-        "min-h-svh w-full max-w-full overflow-x-hidden relative bg-background text-foreground",
+        "bg-background text-foreground relative min-h-svh w-full max-w-full overflow-x-hidden",
         {
           dark: explicitAppearance === "dark",
           light: explicitAppearance === "light",
