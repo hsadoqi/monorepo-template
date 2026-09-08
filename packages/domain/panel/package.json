@@ -1,0 +1,38 @@
+{
+  "name": "@repo/domain-panel",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "@hugeicons/react": "^1.1.10",
+    "zod": "^4.5.4"
+  },
+  "scripts": {
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "format": "prettier src --write",
+    "format:check": "prettier src --check",
+    "check-types": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "test:run": "vitest run --coverage",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@repo/foundation-eslint-config": "workspace:*",
+    "@repo/foundation-prettier-config": "workspace:*",
+    "@repo/foundation-typescript-config": "workspace:*",
+    "@repo/foundation-vitest-config": "workspace:*",
+    "@repo/foundation-vitest-utils": "workspace:*",
+    "@types/node": "^26.4.0",
+    "eslint": "^9.39.5",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.11"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts",
+    "./notes": "./src/notes/index.ts",
+    "./focus": "./src/focus/index.ts",
+    "./files": "./src/files/index.ts"
+  }
+}

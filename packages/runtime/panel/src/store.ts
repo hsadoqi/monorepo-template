@@ -7,11 +7,14 @@ import { createPersistOptions } from "@repo/services-zustand"
 
 import {
   panelPersistedStateSchema,
-  type NoteItem,
-  type FileMetadata,
   type PanelPersistedState,
-} from "./panel-schema"
+} from "@repo/domain-panel/schema"
 
+/**
+ * Pure panel-shell state: which modules are shown and how, whether the
+ * panel is open/locked. Module content (Notes, Files, capture-inbox, ...)
+ * owns its own store — this store never holds module data.
+ */
 export interface PanelState extends PanelPersistedState {
   open: () => void
   close: () => void
@@ -20,17 +23,6 @@ export interface PanelState extends PanelPersistedState {
   setPaneSizes: (sizes: Record<string, number>) => void
   toggleModuleVisibility: (id: string) => void
   reorderModule: (id: string, direction: "up" | "down") => void
-
-  addNote: (text: string) => void
-  updateNote: (id: string, text: string) => void
-  deleteNote: (id: string) => void
-
-  startFocus: (durationMs: number) => void
-  pauseFocus: () => void
-  resetFocus: () => void
-
-  addFileMetadata: (meta: FileMetadata) => void
-  removeFileMetadata: (id: string) => void
 }
 
 const DEFAULT_PERSISTED_STATE: PanelPersistedState = {
@@ -38,9 +30,6 @@ const DEFAULT_PERSISTED_STATE: PanelPersistedState = {
   isLocked: false,
   activeModuleIds: [],
   paneSizes: {},
-  notes: { items: [] },
-  focus: { endTimestamp: null, isRunning: false },
-  files: { items: [] },
 }
 
 function getPanelStorage() {
@@ -104,55 +93,6 @@ export function createPanelStore(version: number) {
             safeSet((state) => ({
               activeModuleIds: moveId(state.activeModuleIds, id, direction),
             })),
-
-          addNote: (text) =>
-            safeSet((state) => ({
-              notes: {
-                items: [
-                  ...state.notes.items,
-                  { id: crypto.randomUUID(), text, createdAt: Date.now() },
-                ],
-              },
-            })),
-          updateNote: (id, text) =>
-            safeSet((state) => ({
-              notes: {
-                items: state.notes.items.map((note) =>
-                  note.id === id ? { ...note, text } : note
-                ),
-              },
-            })),
-          deleteNote: (id) =>
-            safeSet((state) => ({
-              notes: {
-                items: state.notes.items.filter((note) => note.id !== id),
-              },
-            })),
-
-          startFocus: (durationMs) =>
-            safeSet({
-              focus: {
-                endTimestamp: Date.now() + durationMs,
-                isRunning: true,
-              },
-            }),
-          pauseFocus: () =>
-            safeSet((state) => ({
-              focus: { ...state.focus, isRunning: false },
-            })),
-          resetFocus: () =>
-            safeSet({ focus: { endTimestamp: null, isRunning: false } }),
-
-          addFileMetadata: (meta) =>
-            safeSet((state) => ({
-              files: { items: [...state.files.items, meta] },
-            })),
-          removeFileMetadata: (id) =>
-            safeSet((state) => ({
-              files: {
-                items: state.files.items.filter((file) => file.id !== id),
-              },
-            })),
         }
       },
       createPersistOptions<PanelState, PanelPersistedState>({
@@ -172,9 +112,6 @@ export function createPanelStore(version: number) {
           isLocked: state.isLocked,
           activeModuleIds: state.activeModuleIds,
           paneSizes: state.paneSizes,
-          notes: state.notes,
-          focus: state.focus,
-          files: state.files,
         }),
         merge: (persistedState, currentState) => {
           const result = panelPersistedStateSchema.safeParse(persistedState)
@@ -197,5 +134,3 @@ export const panelStore = createPanelStore(1)
 export function usePanelStore<T>(selector: (state: PanelState) => T): T {
   return useStore(panelStore, selector)
 }
-
-export type { NoteItem, FileMetadata }

@@ -1,14 +1,9 @@
 "use client"
 
-import {
-  ArrowUpRight01Icon,
-  Calendar03Icon,
-  Clock01Icon,
-  Folder02Icon,
-  UserGroupIcon,
-} from "@hugeicons/core-free-icons"
+import { ArrowUpRight01Icon, Calendar03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
+import { UPCOMING_ITEMS } from "@/lib/upcoming-items"
 
 export type Project = {
   name: string
@@ -78,35 +73,19 @@ export const Schedule = () => (
       <HugeiconsIcon icon={Calendar03Icon} className="text-muted-foreground" />
     </div>
     <div className="flex flex-col gap-4">
-      <div className="flex items-start gap-3">
-        <div className="bg-primary/10 text-primary mt-1 flex size-8 shrink-0 items-center justify-center rounded-md">
-          <HugeiconsIcon icon={UserGroupIcon} />
+      {UPCOMING_ITEMS.map((item) => (
+        <div key={item.id} className="flex items-start gap-3">
+          <div
+            className={`mt-1 flex size-8 shrink-0 items-center justify-center rounded-md ${item.iconBgClassName} ${item.iconColorClassName}`}
+          >
+            <HugeiconsIcon icon={item.icon} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium">{item.title}</span>
+            <span className="text-muted-foreground text-xs">{item.time}</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Team sync</span>
-          <span className="text-muted-foreground text-xs">Today, 2:00 PM</span>
-        </div>
-      </div>
-      <div className="flex items-start gap-3">
-        <div className="bg-accent/15 text-accent-foreground mt-1 flex size-8 shrink-0 items-center justify-center rounded-md">
-          <HugeiconsIcon icon={Folder02Icon} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Planning review</span>
-          <span className="text-muted-foreground text-xs">
-            Tomorrow, 10:30 AM
-          </span>
-        </div>
-      </div>
-      <div className="flex items-start gap-3">
-        <div className="bg-muted text-muted-foreground mt-1 flex size-8 shrink-0 items-center justify-center rounded-md">
-          <HugeiconsIcon icon={Clock01Icon} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Weekly reset</span>
-          <span className="text-muted-foreground text-xs">Friday, 4:00 PM</span>
-        </div>
-      </div>
+      ))}
     </div>
   </div>
 )

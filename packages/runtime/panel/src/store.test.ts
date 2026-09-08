@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { panelStore } from "./use-panel-store"
+import { panelStore } from "./store"
 
 function resetStore() {
   panelStore.setState(
@@ -8,9 +8,6 @@ function resetStore() {
       isLocked: false,
       activeModuleIds: [],
       paneSizes: {},
-      notes: { items: [] },
-      focus: { endTimestamp: null, isRunning: false },
-      files: { items: [] },
     },
     false
   )
@@ -50,35 +47,12 @@ describe("panelStore", () => {
     ])
   })
 
-  it("adds, updates, and deletes a note", () => {
-    panelStore.getState().addNote("Buy milk")
-    const id = panelStore.getState().notes.items[0]!.id
-    panelStore.getState().updateNote(id, "Buy oat milk")
-    expect(panelStore.getState().notes.items[0]!.text).toBe("Buy oat milk")
-    panelStore.getState().deleteNote(id)
-    expect(panelStore.getState().notes.items).toHaveLength(0)
-  })
-
-  it("starts, pauses, and resets focus", () => {
-    panelStore.getState().startFocus(10 * 60 * 1000)
-    expect(panelStore.getState().focus.isRunning).toBe(true)
-    panelStore.getState().pauseFocus()
-    expect(panelStore.getState().focus.isRunning).toBe(false)
-    expect(panelStore.getState().focus.endTimestamp).not.toBeNull()
-    panelStore.getState().resetFocus()
-    expect(panelStore.getState().focus.endTimestamp).toBeNull()
-  })
-
-  it("adds and removes file metadata", () => {
-    panelStore.getState().addFileMetadata({
-      id: "f1",
-      name: "notes.txt",
-      size: 1024,
-      addedAt: Date.now(),
+  it("sets pane sizes", () => {
+    panelStore.getState().setPaneSizes({ notes: 60, schedule: 40 })
+    expect(panelStore.getState().paneSizes).toEqual({
+      notes: 60,
+      schedule: 40,
     })
-    expect(panelStore.getState().files.items).toHaveLength(1)
-    panelStore.getState().removeFileMetadata("f1")
-    expect(panelStore.getState().files.items).toHaveLength(0)
   })
 
   it("falls back to default state when persisted storage is corrupt", async () => {
