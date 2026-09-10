@@ -1,5 +1,3 @@
-"use client"
-
 import Search01Icon from "@hugeicons/core-free-icons/Search01Icon"
 import PlusSignIcon from "@hugeicons/core-free-icons/PlusSignIcon"
 import { HugeiconsIcon } from "@hugeicons/react"

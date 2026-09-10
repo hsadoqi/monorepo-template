@@ -1,3 +1,5 @@
+"use client"
+
 import { ThemeForm, ThemeMetadataForm } from "@repo/ui-theme/components"
 import {
   Sheet,

@@ -1,9 +1,25 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type { ReactElement } from "react"
 
-import { type CaptureInboxItem, modulesStore } from "@repo/runtime-panel"
+import {
+  type CaptureInboxItem,
+  type ModulesStoreApi,
+  ModulesStoreContextProvider,
+  createModulesStore,
+} from "@repo/runtime-panel"
 
 import { QuickCaptureCard } from "./quick-capture-card"
+
+let modulesStore: ModulesStoreApi
+
+function renderWithModulesStore(ui: ReactElement) {
+  return render(
+    <ModulesStoreContextProvider value={modulesStore}>
+      {ui}
+    </ModulesStoreContextProvider>
+  )
+}
 
 const CAPTURE_ID = "00000000-0000-4000-8000-000000000001"
 const CAPTURED_AT = new Date("2026-09-10T12:00:00.000Z").getTime()
@@ -34,6 +50,7 @@ function seedInbox(items: CaptureInboxItem[]) {
 describe("QuickCaptureCard", () => {
   beforeEach(() => {
     localStorage.clear()
+    modulesStore = createModulesStore(1)
     seedInbox([])
     vi.spyOn(crypto, "randomUUID").mockReturnValue(CAPTURE_ID)
     vi.spyOn(Date, "now").mockReturnValue(CAPTURED_AT)
@@ -44,7 +61,7 @@ describe("QuickCaptureCard", () => {
   })
 
   it("renders the empty capture form with an accessible collapsed review", () => {
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
 
     expect(
       screen.getByRole("heading", { name: "Quick capture" })
@@ -66,7 +83,7 @@ describe("QuickCaptureCard", () => {
   })
 
   it("captures a trimmed thought from the button and opens review", () => {
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
     const input = screen.getByLabelText("Capture a thought")
 
     fireEvent.change(input, { target: { value: "  Book dentist  " } })
@@ -88,7 +105,7 @@ describe("QuickCaptureCard", () => {
   })
 
   it("captures a thought when Enter is pressed", () => {
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
     const input = screen.getByLabelText("Capture a thought")
 
     fireEvent.change(input, { target: { value: "Follow up with Sam" } })
@@ -100,7 +117,7 @@ describe("QuickCaptureCard", () => {
   })
 
   it("ignores empty and whitespace-only captures", () => {
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
     const input = screen.getByLabelText("Capture a thought")
 
     fireEvent.click(screen.getByRole("button", { name: "Capture" }))
@@ -117,7 +134,7 @@ describe("QuickCaptureCard", () => {
   })
 
   it("toggles review and shows its empty state", () => {
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
     const reviewButton = screen.getByRole("button", { name: "Review" })
 
     fireEvent.click(reviewButton)
@@ -139,7 +156,7 @@ describe("QuickCaptureCard", () => {
       }),
       createInboxItem({ id: "second", text: "Second thought" }),
     ])
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
 
     expect(screen.getByText("2 unsorted items")).toBeInTheDocument()
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
@@ -164,7 +181,7 @@ describe("QuickCaptureCard", () => {
     (type) => {
       const item = createInboxItem()
       seedInbox([item])
-      render(<QuickCaptureCard />)
+      renderWithModulesStore(<QuickCaptureCard />)
       fireEvent.click(screen.getByRole("button", { name: "Review" }))
 
       fireEvent.click(
@@ -183,7 +200,7 @@ describe("QuickCaptureCard", () => {
   it("archives an item and updates the visible review", () => {
     const item = createInboxItem()
     seedInbox([item])
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
 
     fireEvent.click(
@@ -203,7 +220,7 @@ describe("QuickCaptureCard", () => {
   it("deletes an item from the inbox", () => {
     const item = createInboxItem()
     seedInbox([item])
-    render(<QuickCaptureCard />)
+    renderWithModulesStore(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
 
     const row = screen.getByText(item.text).parentElement
