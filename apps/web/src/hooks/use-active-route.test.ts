@@ -51,6 +51,8 @@ describe("resolvePageTitle", () => {
   })
 
   it("humanizes the last segment of a nested unregistered route", () => {
-    expect(resolvePageTitle("/settings/notifications", navItems)).toBe("Notifications")
+    expect(resolvePageTitle("/settings/notifications", navItems)).toBe(
+      "Notifications"
+    )
   })
 })

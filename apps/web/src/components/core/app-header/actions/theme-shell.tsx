@@ -1,10 +1,17 @@
-"use client";
+"use client"
 
 import { IconButton } from "@repo/ui-components"
-import { HugeiconsIcon } from "@hugeicons/react";
+import { HugeiconsIcon } from "@hugeicons/react"
 import { PaintBoardFreeIcons } from "@hugeicons/core-free-icons"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@repo/ui-components/base/sheet";
-import { ThemeForm } from "@repo/ui-theme";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@repo/ui-components/base/sheet"
+import { ThemeForm } from "@repo/ui-theme"
 
 export const ThemeShell = () => {
   return (

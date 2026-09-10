@@ -1,7 +1,7 @@
-import { AppearanceToggle } from "@/preferences/components/appearance-toggle";
-import { PanelTrigger } from "./panel-trigger";
-import { ThemeShell } from "./theme-shell";
-import { SettingsTrigger } from "./settings-trigger";
+import { AppearanceToggle } from "@/preferences/components/appearance-toggle"
+import { PanelTrigger } from "./panel-trigger"
+import { ThemeShell } from "./theme-shell"
+import { SettingsTrigger } from "./settings-trigger"
 
 export const AppHeaderActions = () => {
   return (

@@ -1,7 +1,19 @@
-import { Settings02Icon } from "@hugeicons/core-free-icons";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@repo/ui-components/base/sheet";
-import { SidebarFooter, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@repo/ui-components/base/sidebar";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { Settings02Icon } from "@hugeicons/core-free-icons"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@repo/ui-components/base/sheet"
+import {
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@repo/ui-components/base/sidebar"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { ThemeForm } from "@repo/ui-theme"
 
 export const AppSidebarFooter = () => {

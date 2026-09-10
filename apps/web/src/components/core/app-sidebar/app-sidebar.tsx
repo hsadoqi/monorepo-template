@@ -1,8 +1,6 @@
 "use client"
 
-import {
-  Settings02Icon,
-} from "@hugeicons/core-free-icons"
+import { Settings02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Sidebar,
@@ -22,21 +20,25 @@ import {
   Sheet,
 } from "@repo/ui-components/base/sheet"
 import { ThemeForm } from "@repo/ui-theme/components"
-import { AppSidebarHeader } from "./app-sidebar-header";
-import { AppSidebarContent } from "./app-sidebar-content";
-import { useClickOutside } from "@/hooks";
-import { useRef } from "react";
+import { AppSidebarHeader } from "./app-sidebar-header"
+import { AppSidebarContent } from "./app-sidebar-content"
+import { useClickOutside } from "@/hooks"
+import { useRef } from "react"
 
 export const AppSidebar = () => {
   const sidebarRef = useRef(null)
-  const { open, toggleSidebar } = useSidebar();
+  const { open, toggleSidebar } = useSidebar()
 
-  useClickOutside(sidebarRef, () => {
-    if (!open) return;
-    if (open) toggleSidebar()
-  }, {
-    enabled: true
-  })
+  useClickOutside(
+    sidebarRef,
+    () => {
+      if (!open) return
+      if (open) toggleSidebar()
+    },
+    {
+      enabled: true,
+    }
+  )
   return (
     <Sidebar ref={sidebarRef} side="left" variant="sidebar" collapsible="icon">
       <AppSidebarHeader />

@@ -1,6 +1,6 @@
 import { SidebarMenuButton } from "@repo/ui-components/base/sidebar"
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react"
-import { IconButton } from "@repo/ui-components";
+import { IconButton } from "@repo/ui-components"
 
 export const QuickCreateSidebarButton = ({
   icon,
@@ -18,11 +18,7 @@ export const QuickCreateSidebarButton = ({
       size="default"
       onClick={onClick}
       render={
-        <IconButton
-          label={label}
-          variant={"ghost"}
-          tooltipSide="right"
-        >
+        <IconButton label={label} variant={"ghost"} tooltipSide="right">
           <HugeiconsIcon icon={icon} />
         </IconButton>
       }

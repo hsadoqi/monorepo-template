@@ -1,5 +1,5 @@
-import { AppHeaderActions } from "./actions/app-header-actions";
-import { AppHeaderNavigation } from "./app-header-navigation";
+import { AppHeaderActions } from "./actions/app-header-actions"
+import { AppHeaderNavigation } from "./app-header-navigation"
 
 export const AppHeader = () => {
   return (
