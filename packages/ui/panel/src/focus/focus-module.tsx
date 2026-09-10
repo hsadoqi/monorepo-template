@@ -31,6 +31,12 @@ export function FocusModule() {
     ? Math.max(0, endTimestamp - now)
     : DEFAULT_DURATION_MS
 
+  const handleStart = () => {
+    const startedAt = Date.now()
+    setNow(startedAt)
+    startFocus(remainingMs || DEFAULT_DURATION_MS)
+  }
+
   return (
     <div className="flex flex-col items-center gap-3">
       <span className="text-2xl font-semibold tabular-nums">
@@ -38,10 +44,7 @@ export function FocusModule() {
       </span>
       <div className="flex gap-2">
         {!isRunning ? (
-          <Button
-            size="sm"
-            onClick={() => startFocus(remainingMs || DEFAULT_DURATION_MS)}
-          >
+          <Button size="sm" onClick={handleStart}>
             Start
           </Button>
         ) : (

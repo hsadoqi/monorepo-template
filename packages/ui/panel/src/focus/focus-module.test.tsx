@@ -1,9 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { modulesStore } from "@repo/runtime-panel"
 import { FocusModule } from "./focus-module"
 
 beforeEach(() => {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date("2026-09-10T10:00:00Z"))
   modulesStore.setState(
     {
       noteEntities: {},
@@ -17,11 +19,16 @@ beforeEach(() => {
   )
 })
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe("FocusModule", () => {
   it("starts a 25-minute countdown and shows remaining time", () => {
     render(<FocusModule />)
+    vi.setSystemTime(new Date("2026-09-10T10:00:03Z"))
     fireEvent.click(screen.getByRole("button", { name: /start/i }))
-    expect(screen.getAllByText(/24:5\d|25:0[01]/)).toBeDefined()
+    expect(screen.getByText("25:00")).toBeDefined()
     expect(modulesStore.getState().isRunning).toBe(true)
   })
 
