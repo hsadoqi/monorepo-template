@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { modulesStore } from "@repo/runtime-panel"
-import { ScheduleModule } from "./schedule-module"
+import { SchedulesModule } from "./schedules-module"
 
 beforeEach(() => {
   modulesStore.setState(
@@ -21,7 +21,7 @@ beforeEach(() => {
 
 describe("ScheduleModule", () => {
   it("adds an event when the form is submitted", () => {
-    render(<ScheduleModule />)
+    render(<SchedulesModule />)
     fireEvent.change(screen.getByLabelText(/event title/i), {
       target: { value: "Team sync" },
     })
@@ -36,7 +36,7 @@ describe("ScheduleModule", () => {
   })
 
   it("does not add an event missing a title or time", () => {
-    render(<ScheduleModule />)
+    render(<SchedulesModule />)
     fireEvent.change(screen.getByLabelText(/event title/i), {
       target: { value: "Team sync" },
     })
@@ -44,9 +44,25 @@ describe("ScheduleModule", () => {
     expect(modulesStore.getState().scheduleIds).toHaveLength(0)
   })
 
+  it("adds an event with a picked icon", () => {
+    render(<SchedulesModule />)
+    fireEvent.change(screen.getByLabelText(/event title/i), {
+      target: { value: "Team sync" },
+    })
+    fireEvent.change(screen.getByLabelText(/event time/i), {
+      target: { value: "Today, 2:00 PM" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: /choose icon/i }))
+    fireEvent.click(screen.getByRole("option", { name: /^team$/i }))
+    fireEvent.click(screen.getByRole("button", { name: /add event/i }))
+
+    const [id] = modulesStore.getState().scheduleIds
+    expect(modulesStore.getState().scheduleEntities[id!]?.icon).toBe("Team")
+  })
+
   it("deletes an event", () => {
     modulesStore.getState().addScheduleEvent("Team sync", "Today, 2:00 PM")
-    render(<ScheduleModule />)
+    render(<SchedulesModule />)
     fireEvent.click(screen.getByRole("button", { name: /delete team sync/i }))
     expect(screen.queryByText("Team sync")).not.toBeInTheDocument()
   })

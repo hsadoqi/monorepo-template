@@ -7,6 +7,8 @@ import { Input } from "@repo/ui-components/base/input"
 import { Button } from "@repo/ui-components/base/button"
 import { IconButton } from "@repo/ui-components"
 import { useModulesStore } from "@repo/runtime-panel"
+import { IconPicker } from "./icon-picker"
+import { resolveScheduleIcon } from "./icon-options"
 
 const QUICK_CREATE_PRESETS = [
   { label: "15-min check-in", time: "Today, 15:00" },
@@ -15,7 +17,7 @@ const QUICK_CREATE_PRESETS = [
   { label: "All-day review", time: "Fri, all day" },
 ]
 
-export function ScheduleModule() {
+export function SchedulesModule() {
   const scheduleIds = useModulesStore((state) => state.scheduleIds)
   const scheduleEntities = useModulesStore((state) => state.scheduleEntities)
   const addScheduleEvent = useModulesStore((state) => state.addScheduleEvent)
@@ -24,6 +26,7 @@ export function ScheduleModule() {
   )
   const [title, setTitle] = useState("")
   const [time, setTime] = useState("")
+  const [icon, setIcon] = useState<string | undefined>(undefined)
 
   const upcoming = scheduleIds
     .map((id) => scheduleEntities[id])
@@ -63,11 +66,13 @@ export function ScheduleModule() {
         onSubmit={(event) => {
           event.preventDefault()
           if (!title.trim() || !time.trim()) return
-          addScheduleEvent(title.trim(), time.trim())
+          addScheduleEvent(title.trim(), time.trim(), icon)
           setTitle("")
           setTime("")
+          setIcon(undefined)
         }}
       >
+        <IconPicker value={icon} onChange={setIcon} />
         <Input
           aria-label="Event title"
           value={title}
@@ -97,6 +102,10 @@ export function ScheduleModule() {
           <ul className="flex flex-col">
             {upcoming.map((event) => (
               <li key={event.id} className="group flex items-center gap-3 py-1">
+                <HugeiconsIcon
+                  icon={resolveScheduleIcon(event.icon)}
+                  className="text-muted-foreground size-3.5 shrink-0"
+                />
                 <span className="text-card-foreground w-24 shrink-0 font-mono text-xs">
                   {event.time}
                 </span>

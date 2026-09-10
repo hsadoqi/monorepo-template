@@ -1,1 +1,2 @@
-export * from "./panel-modules";
+export * from "./components"
+export * from "./hooks"

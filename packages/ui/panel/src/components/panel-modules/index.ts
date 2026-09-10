@@ -1,4 +1,5 @@
-export * from "./schedule"
+export * from "./schedules"
 export * from "./notes"
 export * from "./focus"
 export * from "./files"
+export * from "./capture-inbox"
