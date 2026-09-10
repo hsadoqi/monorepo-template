@@ -1,14 +1,13 @@
 "use client"
 
-import { documents, type Filter } from "@/lib/data/documents";
+import { documents, type Filter } from "@/lib/data/documents"
 import { useMemo, useState } from "react"
-import { DocumentsHeader } from "./documents-header";
-import { EmptyDocumentsTable } from "./documents-table/empty-documents-table";
-import { ContinueDocumentSection } from "./continue-document-section";
-import { DocumentsTableFilters } from "./documents-table/documents-table-filters";
-import { DocumentSummaryRow } from "./documents-table/document-summary-row";
-import { DocumentsTableHeader } from "./documents-table/documents-table-header";
-
+import { DocumentsHeader } from "./documents-header"
+import { EmptyDocumentsTable } from "./documents-table/empty-documents-table"
+import { ContinueDocumentSection } from "./continue-document-section"
+import { DocumentsTableFilters } from "./documents-table/documents-table-filters"
+import { DocumentSummaryRow } from "./documents-table/document-summary-row"
+import { DocumentsTableHeader } from "./documents-table/documents-table-header"
 
 export function DocumentsIndex() {
   const [query, setQuery] = useState("")
@@ -32,10 +31,7 @@ export function DocumentsIndex() {
 
   return (
     <main className="mx-auto flex w-full max-w-dvw min-w-0 flex-1 flex-col overflow-x-hidden px-4 py-6 sm:px-6 lg:px-10 lg:py-9 xl:max-w-384">
-      <DocumentsHeader
-        query={query}
-        setQuery={setQuery}
-      />
+      <DocumentsHeader query={query} setQuery={setQuery} />
 
       <ContinueDocumentSection />
 
@@ -53,10 +49,7 @@ export function DocumentsIndex() {
             </p>
           </div>
 
-          <DocumentsTableFilters
-            filter={filter}
-            setFilter={setFilter}
-          />
+          <DocumentsTableFilters filter={filter} setFilter={setFilter} />
         </div>
 
         <div className="border-border mt-5 overflow-hidden border-y">
@@ -73,10 +66,7 @@ export function DocumentsIndex() {
               ))}
             </ol>
           ) : (
-              <EmptyDocumentsTable
-                setQuery={setQuery}
-                setFilter={setFilter}
-              />
+            <EmptyDocumentsTable setQuery={setQuery} setFilter={setFilter} />
           )}
         </div>
       </section>

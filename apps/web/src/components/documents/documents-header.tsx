@@ -1,17 +1,19 @@
 "use client"
 
-
 import { HugeiconsIcon } from "@hugeicons/react"
 import { buttonVariants } from "@repo/ui-components/base/button"
 import { Input } from "@repo/ui-components/base/input"
-import {
-  Search01Icon, PlusSignIcon
+import { Search01Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
 
-} from "@hugeicons/core-free-icons"
+import Link from "next/link"
 
-import Link from "next/link";
-
-export const DocumentsHeader = ({ query, setQuery }: { query: string; setQuery: (query: string) => void; }) => {
+export const DocumentsHeader = ({
+  query,
+  setQuery,
+}: {
+  query: string
+  setQuery: (query: string) => void
+}) => {
   return (
     <header className="border-border grid gap-6 border-b pb-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
       <div className="max-w-2xl">

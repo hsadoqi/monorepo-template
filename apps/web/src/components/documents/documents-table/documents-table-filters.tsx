@@ -1,7 +1,13 @@
-import { Filter, filters } from "@/lib/data/documents";
-import { cn } from "@repo/ui-components/lib/utils";
+import { Filter, filters } from "@/lib/data/documents"
+import { cn } from "@repo/ui-components/lib/utils"
 
-export const DocumentsTableFilters = ({ setFilter, filter }: { setFilter: (filter: Filter) => void; filter: Filter }) => {
+export const DocumentsTableFilters = ({
+  setFilter,
+  filter,
+}: {
+  setFilter: (filter: Filter) => void
+  filter: Filter
+}) => {
   return (
     <div
       role="group"

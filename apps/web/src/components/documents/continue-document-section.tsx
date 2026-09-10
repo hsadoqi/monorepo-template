@@ -1,7 +1,7 @@
-import { continuedDocument } from "@/lib/data/documents";
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import Link from "next/link";
+import { continuedDocument } from "@/lib/data/documents"
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import Link from "next/link"
 
 export const ContinueDocumentSection = () => {
   return (

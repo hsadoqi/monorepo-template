@@ -1,10 +1,16 @@
 "use client"
-import { File02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import Link from "next/link";
-import type { DocumentSummary } from "@/lib/data/documents";
+import { File02Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import Link from "next/link"
+import type { DocumentSummary } from "@/lib/data/documents"
 
-export const DocumentSummaryRow = ({ document, documentIndex }: { document: DocumentSummary; documentIndex: number }) => {
+export const DocumentSummaryRow = ({
+  document,
+  documentIndex,
+}: {
+  document: DocumentSummary
+  documentIndex: number
+}) => {
   return (
     <li key={document.id}>
       <Link
