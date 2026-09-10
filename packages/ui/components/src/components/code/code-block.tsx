@@ -8,6 +8,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { Badge } from "../../base/ui/badge"
 import { Button } from "../../base/ui/button"
+import { IconButton } from "../buttons/icon-button"
 import { cn } from "../../lib/utils"
 
 type CodeBlockDiff = {
@@ -217,12 +218,12 @@ function CodeBlockCopyButton({
   }
 
   return (
-    <Button
+    <IconButton
       variant="ghost"
       size="icon"
       className={cn("size-9", className)}
       onClick={handleCopy}
-      aria-label={copied ? "Code copied" : "Copy code"}
+      label={copied ? "Code copied" : "Copy code"}
       {...props}
     >
       {copied ? (
@@ -230,7 +231,7 @@ function CodeBlockCopyButton({
       ) : (
         <HugeIcon icon={Clipboard} data-icon="inline-start" />
       )}
-    </Button>
+    </IconButton>
   )
 }
 
@@ -268,15 +269,15 @@ function CodeBlockSearch({ className, ...props }: CodeBlockSearchProps) {
           className="w-28 bg-transparent px-2 text-sm outline-none sm:w-40"
         />
         {query ? (
-          <Button
+          <IconButton
             variant="ghost"
             size="icon"
             className="size-9 rounded-none"
             onClick={() => setQuery("")}
-            aria-label="Close search"
+            label="Close search"
           >
             <HugeIcon icon={X} data-icon="inline-start" />
-          </Button>
+          </IconButton>
         ) : null}
       </div>
     </div>

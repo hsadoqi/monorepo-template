@@ -72,7 +72,7 @@ export function PrimaryColorField({
                   <button
                     type="button"
                     aria-label="Edit primary color"
-                    className="border-border/70 size-10 shrink-0 rounded-md border shadow-sm transition-transform hover:scale-105"
+                    className="border-border/70 min-w-10 min-h-10 h-10 w-10! size-10 shrink-0 rounded-md border shadow-sm transition-transform hover:scale-105"
                     style={{
                       backgroundColor: colorState.hex,
                     }}

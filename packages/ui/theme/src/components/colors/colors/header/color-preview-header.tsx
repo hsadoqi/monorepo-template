@@ -1,7 +1,7 @@
 "use client"
 
 import { Dices, TriangleAlert } from "lucide-react"
-import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components/buttons/icon-button"
 import { CopyButton } from "@repo/ui-components/buttons/copy-value"
 
 export type ColorPreviewHeaderProps = {
@@ -40,16 +40,16 @@ export function ColorPreviewHeader({
           <span className="sr-only">Chroma reduced to render in sRGB</span>
         </span>
       )}
-      <Button
+      <IconButton
         type="button"
         variant="outline"
         size="icon"
         onClick={onRandomize}
         className="size-7 shrink-0"
-        aria-label="Randomize color"
+        label="Randomize color"
       >
         <Dices className="size-3.5" aria-hidden />
-      </Button>
+      </IconButton>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 export * from "./buttons/split-button-dropdown-menu"
 export * from "./buttons/copy-value"
+export * from "./buttons/icon-button"
 export * from "./code/code-block"
 export * from "./code/diff-code-block"
 export * from "./cards/shortcut-reference-card"

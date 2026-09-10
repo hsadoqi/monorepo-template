@@ -16,6 +16,7 @@ import {
 } from "@repo/ui-components/base/popover"
 import { Checkbox } from "@repo/ui-components/base/checkbox"
 import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components/buttons/icon-button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SquareLock02Icon,
@@ -112,26 +113,26 @@ export function UtilityPanel({
                         <span className="flex-1 text-sm">{module.label}</span>
                         {isVisible && (
                           <>
-                            <Button
+                            <IconButton
                               variant="ghost"
                               size="icon-sm"
-                              aria-label={`Move ${module.label} up`}
+                              label={`Move ${module.label} up`}
                               disabled={visibleIndex <= 0}
                               onClick={() => onReorderModule(module.id, "up")}
                             >
                               <HugeiconsIcon icon={ArrowUp01Icon} />
-                            </Button>
-                            <Button
+                            </IconButton>
+                            <IconButton
                               variant="ghost"
                               size="icon-sm"
-                              aria-label={`Move ${module.label} down`}
+                              label={`Move ${module.label} down`}
                               disabled={
                                 visibleIndex >= activeModuleIds.length - 1
                               }
                               onClick={() => onReorderModule(module.id, "down")}
                             >
                               <HugeiconsIcon icon={ArrowDown01Icon} />
-                            </Button>
+                            </IconButton>
                           </>
                         )}
                       </li>
