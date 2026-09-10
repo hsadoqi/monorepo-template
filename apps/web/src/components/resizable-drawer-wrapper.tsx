@@ -45,7 +45,7 @@ export type ResizableDrawerWrapperState = {
 export type ResizableSize = string | number | "0%"
 // Number is pixels
 // String is percentage
-// Use excplicit units for another interpretation, e.g. "50px" or "50%"
+// Use explicit units for another interpretation, e.g. "50px" or "50%"
 
 export type ResizablePanelState = {
   groupResizeBehavior?:
@@ -117,9 +117,7 @@ export const ResizableDrawerWrapper = ({
           <div className="flex h-full items-center justify-center p-6">
             <Button
               className="mb-2"
-              onClick={
-                isOpen ? () => handleCollapse() : () => handleExpand()
-              }
+              onClick={isOpen ? () => handleCollapse() : () => handleExpand()}
             >
               {isOpen ? "Collapse Me!" : "Expand Me!"}
             </Button>
@@ -129,9 +127,7 @@ export const ResizableDrawerWrapper = ({
       ) : (
         <Button
           className="mb-2"
-          onClick={
-            isOpen ? () => handleCollapse() : () => handleExpand()
-          }
+          onClick={isOpen ? () => handleCollapse() : () => handleExpand()}
         >
           {isOpen ? "Collapse Me!" : "Expand Me!"}
         </Button>

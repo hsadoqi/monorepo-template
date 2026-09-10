@@ -6,7 +6,7 @@ import { Button } from "@repo/ui-components/base/button"
 import { ProjectSection } from "./project-section"
 import { DashboardHeader } from "./dashboard-header"
 import { UpcomingTasksCard } from "./upcoming-tasks-card"
-import { QuickCaptureCard } from "./quick-capture-card"
+// import { QuickCaptureCard } from "../components/quarantine/quick-capture-card"
 
 const projects = [
   {
@@ -48,7 +48,7 @@ export default function Page() {
     <main className="flex flex-1 flex-col gap-8 px-5 py-6 md:px-8 md:py-8">
       <DashboardHeader />
       <UpcomingTasksCard tasks={tasks} />
-      <QuickCaptureCard />
+      {/* <QuickCaptureCard /> */}
       <ProjectSection projects={projects} />
 
       <section className="border-primary/20 bg-primary/5 flex flex-col gap-4 rounded-xl border p-5 md:flex-row md:items-center md:justify-between md:p-6">

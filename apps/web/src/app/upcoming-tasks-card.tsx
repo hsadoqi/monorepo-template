@@ -7,7 +7,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@repo/ui-components/base/badge"
 import { MoreHorizontalIcon, SparklesIcon } from "@hugeicons/core-free-icons"
-import { QuickCaptureCard } from "./quick-capture-card"
+// import { QuickCaptureCard } from "../../components/quarantine/quick-capture-card"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 export type Task = {
@@ -83,7 +83,7 @@ export const UpcomingTasksCard = ({ tasks }: { tasks: Task[] }) => {
         </Button>
       </div>
 
-      <QuickCaptureCard />
+      {/* <QuickCaptureCard /> */}
     </section>
   )
 }

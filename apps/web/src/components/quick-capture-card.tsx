@@ -27,6 +27,7 @@ function TriageRow({
   const tag = useStore(useCaptureInboxStore, (state) => state.tag)
   const archive = useStore(useCaptureInboxStore, (state) => state.archive)
   const deleteItem = useStore(useCaptureInboxStore, (state) => state.delete)
+
   const describe = (action: string) =>
     `Item ${position}: ${action} ("${item.text}")`
 

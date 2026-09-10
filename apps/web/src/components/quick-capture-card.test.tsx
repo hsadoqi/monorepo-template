@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { useCaptureInboxStore } from "@repo/runtime-panel"
 import { QuickCaptureCard } from "./quick-capture-card"
+import { useCaptureInboxStore } from "@repo/runtime-panel"
 
 describe("QuickCaptureCard", () => {
   beforeEach(() => {
