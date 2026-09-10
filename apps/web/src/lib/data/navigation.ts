@@ -1,5 +1,6 @@
 import { IconSvgElement } from "@hugeicons/react"
 import {
+  DashboardSquare01Icon,
   Home01FreeIcons,
   Note01Icon,
   PaintbrushIcon,
@@ -31,5 +32,11 @@ export const groups: SidebarGroup[] = [
     icon: Note01Icon,
     items: items,
     href: "/documents",
+  },
+  {
+    label: "Dashboards",
+    icon: DashboardSquare01Icon,
+    items: items,
+    href: "/dashboards",
   },
 ]

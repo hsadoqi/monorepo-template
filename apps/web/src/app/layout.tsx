@@ -2,7 +2,7 @@ import { readPreferencesCookie } from "@repo/adapters-next"
 import { generateAppearanceBootstrapCode } from "@repo/adapters-theme-browser/bootstrap"
 import { DEFAULT_APPEARANCE_PREFERENCE } from "@repo/domain-preferences"
 import { cn } from "@repo/ui-components/lib/utils"
-import { Viewport } from "next"
+import { Metadata, Viewport } from "next"
 import { Geist_Mono, IBM_Plex_Sans, Raleway } from "next/font/google"
 import Script from "next/script"
 import React, { type ReactNode } from "react"
@@ -24,6 +24,14 @@ const geistMono = Geist_Mono({
 })
 export interface RootLayoutProps {
   children: ReactNode
+}
+export const metadata: Metadata = {
+  title: {
+    default: "Synapcity",
+    template: "%s | Synapcity",
+  },
+  description:
+    "Synapcity is a modular personal knowledge and workspace platform for documents, notes, projects, dashboards, runbooks, and connected information.",
 }
 export const viewport: Viewport = {
   colorScheme: "light dark",
@@ -53,10 +61,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         ibmPlexSans.variable,
         geistMono.variable,
         "bg-background text-foreground relative h-svh w-full max-w-full overflow-hidden",
-        {
-          dark: explicitAppearance === "dark",
-          light: explicitAppearance === "light",
-        }
+        explicitAppearance
       )}
       data-theme={explicitAppearance}
       style={

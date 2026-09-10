@@ -5,12 +5,29 @@ const nextConfig: NextConfig = {
     "@repo/ui-components",
     "@repo/ui-theme",
     "@repo/ui-design-system",
-    "@repo/domain-theme",
+    "@repo/ui-panel",
+    "@repo/ui-preferenes",
+    "@repo/ui-theme",
+    "@repo/ui-tailwind-config",
   ],
-  serverExternalPackages: ["@repo/services-cookies"],
+  serverExternalPackages: [],
   experimental: {
-    optimizePackageImports: ["@hugeicons/core-free-icons", "@hugeicons/react"],
+    optimizePackageImports: [
+      "@hugeicons/core-free-icons",
+      "@hugeicons/react",
+      "lucide-react",
+      "date-fns",
+      "class-variance-authority",
+      "cmdk",
+      "clsx",
+      "react-day-picker",
+      "tailwind-merge",
+      "zod",
+      "zustand",
+      "@base-ui/react",
+    ],
   },
+  allowedDevOrigins: ['127.0.0.1']
 }
 
 export default nextConfig

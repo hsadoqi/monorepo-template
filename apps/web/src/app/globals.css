@@ -4,6 +4,7 @@
 
 @source "../**/*.{ts,tsx}";
 @source "../../../../packages/ui/components/src/**/*.{ts,tsx}";
+@source "../../../../packages/ui/panel/src/**/*.{ts,tsx}";
 @source "../../../../packages/features/**/*.{ts,tsx}";
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
