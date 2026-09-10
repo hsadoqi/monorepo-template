@@ -1,4 +1,4 @@
-import type { PanelModule } from "@repo/ui-components/components/panel"
+import type { PanelModule } from "@repo/domain-panel/modules"
 
 let modules: PanelModule[] = []
 

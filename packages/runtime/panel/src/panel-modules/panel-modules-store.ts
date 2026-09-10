@@ -5,42 +5,28 @@ import { useStore } from "zustand/react"
 import { persist } from "zustand/middleware"
 import { createPersistOptions, getLocalStorage } from "@repo/services-zustand"
 import { z } from "zod"
-
-import { notesPersistedStateSchema } from "@repo/domain-panel/notes"
-import { focusPersistedStateSchema } from "@repo/domain-panel/focus"
-import { filesPersistedStateSchema } from "@repo/domain-panel/files"
-import { scheduleEventsPersistedStateSchema } from "@repo/domain-panel/schedules"
-import { createNotesSlice, type NotesSlice } from "./notes/notes-slice"
-import { createFocusSlice, type FocusSlice } from "./focus/focus-slice"
-import { createFilesSlice, type FilesSlice } from "./files/files-slice"
 import {
+  createNotesSlice,
+  type NotesSlice,
+  createFocusSlice,
+  type FocusSlice,
+  createFilesSlice,
+  type FilesSlice,
   createSchedulesSlice,
   type SchedulesSlice,
-} from "./schedule/schedule-slice"
+  createCaptureInboxItemsSlice,
+  type CaptureInboxItemsSlice,
+} from "./slices"
 
-/**
- * Consolidated store for panel module content (Notes, Focus, Files).
- *
- * Each module's logic lives in its own slice-creator function
- * (createNotesSlice/createFocusSlice/createFilesSlice) so it stays
- * independently readable/testable/movable — composing them into one store
- * here is what actually uses the slices pattern for something; a slice used
- * in only its own store would just be a store with an extra name for it.
- *
- * This is separate from the panel shell store (open/lock/active modules/
- * pane sizes) in @repo/runtime-panel's `store.ts` — module content and
- * panel layout are unrelated concerns with no reason to share a persistence
- * key or rehydrate together.
- */
+import { modulesPersistedStateSchema } from "./panel-modules-store.schema"
+
 export interface ModulesState
-  extends NotesSlice, FocusSlice, FilesSlice, SchedulesSlice {}
-
-const modulesPersistedStateSchema = z.object({
-  notes: notesPersistedStateSchema,
-  focus: focusPersistedStateSchema,
-  files: filesPersistedStateSchema,
-  schedules: scheduleEventsPersistedStateSchema,
-})
+  extends
+    NotesSlice,
+    FocusSlice,
+    FilesSlice,
+    SchedulesSlice,
+    CaptureInboxItemsSlice {}
 
 type ModulesPersistedState = z.infer<typeof modulesPersistedStateSchema>
 
@@ -49,6 +35,7 @@ const DEFAULT_PERSISTED_STATE: ModulesPersistedState = {
   focus: { endTimestamp: null, isRunning: false },
   files: { entities: {}, ids: [] },
   schedules: { entities: {}, ids: [] },
+  inbox: { entities: {}, ids: [] },
 }
 
 export function createModulesStore(version: number) {
@@ -59,6 +46,7 @@ export function createModulesStore(version: number) {
         ...createFocusSlice(set),
         ...createFilesSlice(set),
         ...createSchedulesSlice(set),
+        ...createCaptureInboxItemsSlice(set),
       }),
       createPersistOptions<ModulesState, ModulesPersistedState>({
         name: "panel-modules-store",
@@ -83,6 +71,10 @@ export function createModulesStore(version: number) {
             entities: state.scheduleEntities,
             ids: state.scheduleIds,
           },
+          inbox: {
+            entities: state.inboxItemEntities,
+            ids: state.inboxItemIds,
+          },
         }),
         merge: (persistedState, currentState) => {
           if (persistedState == null) return currentState
@@ -99,6 +91,8 @@ export function createModulesStore(version: number) {
               isRunning: false,
               scheduleEntities: {},
               scheduleIds: [],
+              inboxItemEntities: {},
+              inboxItemIds: [],
             }
           }
           return {
@@ -111,6 +105,8 @@ export function createModulesStore(version: number) {
             isRunning: result.data.focus.isRunning,
             scheduleEntities: result.data.schedules.entities,
             scheduleIds: result.data.schedules.ids,
+            inboxItemEntities: result.data.inbox.entities,
+            inboxItemIds: result.data.inbox.ids,
           }
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

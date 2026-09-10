@@ -3,7 +3,7 @@ import type { ScheduleEventItem } from "@repo/domain-panel/schedules"
 export interface SchedulesSlice {
   scheduleEntities: Record<string, ScheduleEventItem>
   scheduleIds: string[]
-  addScheduleEvent: (title: string, time: string) => void
+  addScheduleEvent: (title: string, time: string, icon?: string) => void
   deleteScheduleEvent: (id: string) => void
 }
 
@@ -18,12 +18,13 @@ export function createSchedulesSlice(set: SetSlice): SchedulesSlice {
     scheduleEntities: {},
     scheduleIds: [],
 
-    addScheduleEvent: (title, time) => {
+    addScheduleEvent: (title, time, icon) => {
       const id = crypto.randomUUID()
       const event: ScheduleEventItem = {
         id,
         title,
         time,
+        icon,
         createdAt: Date.now(),
       }
       set((state) => ({

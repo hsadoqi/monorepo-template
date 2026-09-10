@@ -7,7 +7,7 @@ function resetStore() {
       isOpen: false,
       isLocked: false,
       activeModuleIds: [],
-      paneSizes: {},
+      panelSizes: {},
     },
     false
   )
@@ -44,9 +44,9 @@ describe("panelStore", () => {
     expect(panelStore.getState().activeModuleIds).toEqual(["schedule", "notes"])
   })
 
-  it("sets pane sizes", () => {
-    panelStore.getState().setPaneSizes({ notes: 60, schedule: 40 })
-    expect(panelStore.getState().paneSizes).toEqual({
+  it("sets panel sizes", () => {
+    panelStore.getState().setPanelSizes({ notes: 60, schedule: 40 })
+    expect(panelStore.getState().panelSizes).toEqual({
       notes: 60,
       schedule: 40,
     })
@@ -76,6 +76,49 @@ describe("panelStore", () => {
 
     expect(panelStore.getState().isOpen).toBe(false)
     warnSpy.mockRestore()
+  })
+
+  it("migrates a stale empty activeModuleIds from before the default changed", async () => {
+    localStorage.setItem(
+      "panel-store",
+      JSON.stringify({
+        state: {
+          isOpen: false,
+          isLocked: false,
+          activeModuleIds: [],
+          panelSizes: {},
+        },
+        version: 1,
+      })
+    )
+
+    await panelStore.persist.rehydrate()
+
+    expect(panelStore.getState().activeModuleIds).toEqual([
+      "notes",
+      "files",
+      "schedule",
+      "focus",
+    ])
+  })
+
+  it("preserves an intentionally empty activeModuleIds once persisted at the current version", async () => {
+    localStorage.setItem(
+      "panel-store",
+      JSON.stringify({
+        state: {
+          isOpen: false,
+          isLocked: false,
+          activeModuleIds: [],
+          panelSizes: {},
+        },
+        version: 2,
+      })
+    )
+
+    await panelStore.persist.rehydrate()
+
+    expect(panelStore.getState().activeModuleIds).toEqual([])
   })
 
   it("does not throw when persisting a write fails, and keeps the in-memory update", () => {

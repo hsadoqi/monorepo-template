@@ -20,7 +20,7 @@ export interface PanelState extends PanelPersistedState {
   close: () => void
   toggleOpen: () => void
   toggleLock: () => void
-  setPaneSizes: (sizes: Record<string, number>) => void
+  setPanelSizes: (sizes: Record<string, number>) => void
   toggleModuleVisibility: (id: string) => void
   reorderModule: (id: string, direction: "up" | "down") => void
 }
@@ -28,8 +28,8 @@ export interface PanelState extends PanelPersistedState {
 const DEFAULT_PERSISTED_STATE: PanelPersistedState = {
   isOpen: false,
   isLocked: false,
-  activeModuleIds: [],
-  paneSizes: {},
+  activeModuleIds: ["notes", "files", "schedule", "focus"],
+  panelSizes: {},
 }
 
 function moveId(ids: string[], id: string, direction: "up" | "down"): string[] {
@@ -64,7 +64,7 @@ export function createPanelStore(version: number) {
           close: () => safeSet({ isOpen: false }),
           toggleOpen: () => safeSet((state) => ({ isOpen: !state.isOpen })),
           toggleLock: () => safeSet((state) => ({ isLocked: !state.isLocked })),
-          setPaneSizes: (sizes) => safeSet({ paneSizes: sizes }),
+          setPanelSizes: (sizes) => safeSet({ panelSizes: sizes }),
           toggleModuleVisibility: (id) =>
             safeSet((state) => ({
               activeModuleIds: state.activeModuleIds.includes(id)
@@ -87,13 +87,19 @@ export function createPanelStore(version: number) {
             console.warn("Failed to restore panel state:", result.error)
             return DEFAULT_PERSISTED_STATE
           }
-          return result.data
+          return {
+            ...result.data,
+            activeModuleIds:
+              result.data.activeModuleIds.length > 0
+                ? result.data.activeModuleIds
+                : DEFAULT_PERSISTED_STATE.activeModuleIds,
+          }
         },
         partialize: (state) => ({
           isOpen: state.isOpen,
           isLocked: state.isLocked,
           activeModuleIds: state.activeModuleIds,
-          paneSizes: state.paneSizes,
+          panelSizes: state.panelSizes,
         }),
         merge: (persistedState, currentState) => {
           if (persistedState == null) return currentState
@@ -111,7 +117,7 @@ export function createPanelStore(version: number) {
 }
 
 /** Vanilla store — use for non-React code and tests (getState/setState/persist.rehydrate). */
-export const panelStore = createPanelStore(1)
+export const panelStore = createPanelStore(2)
 
 /** React hook wrapper — component call-sites use this exactly like a bound zustand hook. */
 export function usePanelStore<T>(selector: (state: PanelState) => T): T {

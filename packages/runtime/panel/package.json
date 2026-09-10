@@ -52,8 +52,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./registry": "./src/registry.ts",
-    "./store": "./src/store.ts",
-    "./modules-store": "./src/modules-store.ts"
+    "./registry": "./src/store/registry.ts",
+    "./store": "./src/store/store.ts",
+    "./modules-store": "./src/panel-modules/panel-modules-store.ts"
   }
 }

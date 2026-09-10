@@ -26,6 +26,20 @@ describe("createSchedulesSlice", () => {
     expect(get().scheduleEntities[id!]?.createdAt).toEqual(expect.any(Number))
   })
 
+  it("adds a schedule event with an optional icon key", () => {
+    const { get } = createTestSlice()
+    get().addScheduleEvent("Team sync", "Today, 2:00 PM", "Calendar03Icon")
+    const [id] = get().scheduleIds
+    expect(get().scheduleEntities[id!]?.icon).toBe("Calendar03Icon")
+  })
+
+  it("leaves icon undefined when not provided", () => {
+    const { get } = createTestSlice()
+    get().addScheduleEvent("Team sync", "Today, 2:00 PM")
+    const [id] = get().scheduleIds
+    expect(get().scheduleEntities[id!]?.icon).toBeUndefined()
+  })
+
   it("deletes a schedule event, removing it from both entities and ids", () => {
     const { get } = createTestSlice()
     get().addScheduleEvent("Team sync", "Today, 2:00 PM")
