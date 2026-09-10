@@ -28,4 +28,20 @@ describe("panelPersistedStateSchema", () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it("rejects paneSizes with a non-number value", () => {
+    const result = panelPersistedStateSchema.safeParse({
+      ...validState,
+      paneSizes: { notes: "50%" },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts an empty paneSizes map", () => {
+    const result = panelPersistedStateSchema.safeParse({
+      ...validState,
+      paneSizes: {},
+    })
+    expect(result.success).toBe(true)
+  })
 })

@@ -96,6 +96,7 @@ export function createPanelStore(version: number) {
           paneSizes: state.paneSizes,
         }),
         merge: (persistedState, currentState) => {
+          if (persistedState == null) return currentState
           const result = panelPersistedStateSchema.safeParse(persistedState)
           if (!result.success) {
             console.warn("Failed to restore panel state:", result.error)

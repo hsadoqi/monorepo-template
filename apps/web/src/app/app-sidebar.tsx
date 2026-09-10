@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Home01Icon,
   PaintBoardIcon,
@@ -84,15 +86,15 @@ export const AppSidebar = () => {
                   </SidebarMenuButton>
                 }
               />
-              <SheetContent className="gap-0 overflow-hidden">
+              <SheetContent className="w-[calc(100vw-1rem)] gap-0 overflow-hidden p-0 sm:max-w-[min(72rem,calc(100vw-2rem))]">
                 <SheetHeader className="shrink-0">
                   <SheetTitle>Theme settings</SheetTitle>
                   <SheetDescription>
                     Tune the appearance of this workspace.
                   </SheetDescription>
                 </SheetHeader>
-                <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
-                  <ThemeForm />
+                <div className="min-h-0 flex-1 overflow-hidden">
+                  <ThemeForm className="h-full" />
                 </div>
               </SheetContent>
             </Sheet>

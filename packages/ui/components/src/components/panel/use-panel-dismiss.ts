@@ -6,12 +6,19 @@ export interface UsePanelDismissOptions {
   panelRef: React.RefObject<HTMLElement | null>
 }
 
-export function usePanelDismiss({ enabled, onDismiss, panelRef }: UsePanelDismissOptions) {
+export function usePanelDismiss({
+  enabled,
+  onDismiss,
+  panelRef,
+}: UsePanelDismissOptions) {
   useEffect(() => {
     if (!enabled) return
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         onDismiss()
       }
     }

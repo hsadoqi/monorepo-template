@@ -41,17 +41,19 @@
     "@types/node": "^26.4.0",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.5",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "typescript": "^6.0.3",
+    "vitest": "^4.1.11",
     "zustand": "^5.0.0"
   },
   "exports": {
     ".": "./src/index.ts",
-    "./module": "./src/module.ts",
     "./registry": "./src/registry.ts",
-    "./store": "./src/store.ts"
+    "./store": "./src/store.ts",
+    "./modules-store": "./src/modules-store.ts"
   }
 }

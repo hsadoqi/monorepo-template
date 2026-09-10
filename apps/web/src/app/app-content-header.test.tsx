@@ -11,8 +11,9 @@ Object.defineProperty(window, "matchMedia", {
   value: matchMedia,
 })
 
-vi.mock("@repo/ui-theme", () => ({
+vi.mock("@repo/ui-theme/components", () => ({
   ThemeForm: () => <div>Theme form</div>,
+  ThemeMetadataForm: () => <div>Theme metadata form</div>,
 }))
 
 vi.mock("@/components/appearance-toggle", () => ({
@@ -20,7 +21,7 @@ vi.mock("@/components/appearance-toggle", () => ({
 }))
 
 describe("AppContentHeader", () => {
-  it("keeps the theme sheet header fixed while its body scrolls", () => {
+  it("keeps the theme sheet shell fixed while the editor owns pane scrolling", () => {
     const { getByRole } = render(
       <SidebarProvider>
         <AppContentHeader />
@@ -40,7 +41,7 @@ describe("AppContentHeader", () => {
       expect.arrayContaining(["shrink-0"])
     )
     expect(body?.className.split(" ")).toEqual(
-      expect.arrayContaining(["min-h-0", "flex-1", "overflow-y-auto"])
+      expect.arrayContaining(["min-h-0", "flex-1", "overflow-hidden"])
     )
   })
 })

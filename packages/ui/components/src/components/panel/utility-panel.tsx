@@ -86,7 +86,11 @@ export function UtilityPanel({
             <Popover>
               <PopoverTrigger
                 render={
-                  <Button variant="ghost" size="icon-sm" aria-label="Manage modules" />
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Manage modules"
+                  />
                 }
               >
                 <HugeiconsIcon icon={Settings02Icon} />
@@ -121,7 +125,9 @@ export function UtilityPanel({
                               variant="ghost"
                               size="icon-sm"
                               aria-label={`Move ${module.label} down`}
-                              disabled={visibleIndex >= activeModuleIds.length - 1}
+                              disabled={
+                                visibleIndex >= activeModuleIds.length - 1
+                              }
                               onClick={() => onReorderModule(module.id, "down")}
                             >
                               <HugeiconsIcon icon={ArrowDown01Icon} />

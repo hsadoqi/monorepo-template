@@ -26,8 +26,12 @@ describe("FilesModule", () => {
   it("adds a file under the size limit and lists it", async () => {
     render(<FilesModule />)
     const input = screen.getByLabelText(/add file/i)
-    fireEvent.change(input, { target: { files: [makeFile("notes.txt", 1024)] } })
-    await waitFor(() => expect(screen.getByText("notes.txt")).toBeInTheDocument())
+    fireEvent.change(input, {
+      target: { files: [makeFile("notes.txt", 1024)] },
+    })
+    await waitFor(() =>
+      expect(screen.getByText("notes.txt")).toBeInTheDocument()
+    )
   })
 
   it("rejects a file over 5MB with an inline message", async () => {
@@ -46,7 +50,9 @@ describe("FilesModule", () => {
     render(<FilesModule />)
     const input = screen.getByLabelText(/add file/i)
     fireEvent.change(input, { target: { files: [makeFile("notes.txt", 10)] } })
-    await waitFor(() => expect(screen.getByText("notes.txt")).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByText("notes.txt")).toBeInTheDocument()
+    )
 
     fireEvent.click(screen.getByRole("button", { name: /remove notes.txt/i }))
     await waitFor(() =>

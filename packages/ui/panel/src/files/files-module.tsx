@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { Upload } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
 import { useModulesStore } from "@repo/runtime-panel"
 import { saveFileBlob, deleteFileBlob } from "./file-storage"
@@ -15,6 +17,7 @@ export function FilesModule() {
     (state) => state.removeFileMetadata
   )
   const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFiles = async (fileList: FileList | null) => {
     const file = fileList?.[0]
@@ -26,20 +29,34 @@ export function FilesModule() {
     setError(null)
     const id = crypto.randomUUID()
     await saveFileBlob(id, file)
-    addFileMetadata({ id, name: file.name, size: file.size, addedAt: Date.now() })
+    addFileMetadata({
+      id,
+      name: file.name,
+      size: file.size,
+      addedAt: Date.now(),
+    })
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="text-sm font-medium" htmlFor="panel-file-input">
-        Add file
-      </label>
       <input
+        ref={fileInputRef}
         id="panel-file-input"
         type="file"
         aria-label="Add file"
+        className="hidden"
         onChange={(event) => handleFiles(event.target.files)}
       />
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-fit gap-2"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <HugeiconsIcon icon={Upload} className="size-4" />
+        Add file
+      </Button>
       {error && <p className="text-destructive text-xs">{error}</p>}
       <ul className="flex flex-col gap-2">
         {fileIds.map((id) => {

@@ -24,14 +24,18 @@
     "@repo/foundation-vitest-config": "workspace:*",
     "@repo/foundation-vitest-utils": "workspace:*",
     "@types/node": "^26.4.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.39.5",
-    "typescript": "^6.0.3"
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
   },
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema.ts",
     "./notes": "./src/notes/index.ts",
     "./focus": "./src/focus/index.ts",
-    "./files": "./src/files/index.ts"
+    "./files": "./src/files/index.ts",
+    "./schedules": "./src/schedules/index.ts"
   }
 }
