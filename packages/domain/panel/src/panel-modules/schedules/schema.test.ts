@@ -29,6 +29,29 @@ describe("scheduleEventItemSchema", () => {
     expect(result.success).toBe(true)
     expect(result.data?.title).toBe("Untitled event")
   })
+
+  it("accepts an event with an icon key", () => {
+    const result = scheduleEventItemSchema.safeParse({
+      id: "1",
+      title: "Buy milk",
+      time: "2023-01-01T12:00:00Z",
+      createdAt: 0,
+      icon: "Calendar03Icon",
+    })
+    expect(result.success).toBe(true)
+    expect(result.data?.icon).toBe("Calendar03Icon")
+  })
+
+  it("leaves icon undefined when omitted", () => {
+    const result = scheduleEventItemSchema.safeParse({
+      id: "1",
+      title: "Buy milk",
+      time: "2023-01-01T12:00:00Z",
+      createdAt: 0,
+    })
+    expect(result.success).toBe(true)
+    expect(result.data?.icon).toBeUndefined()
+  })
 })
 
 describe("scheduleEventsPersistedStateSchema", () => {

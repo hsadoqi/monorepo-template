@@ -5,7 +5,7 @@ const validState = {
   isOpen: false,
   isLocked: false,
   activeModuleIds: ["notes"],
-  paneSizes: { notes: 100 },
+  panelSizes: { notes: 100 },
 }
 
 describe("panelPersistedStateSchema", () => {
@@ -29,18 +29,18 @@ describe("panelPersistedStateSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  it("rejects paneSizes with a non-number value", () => {
+  it("rejects panelSizes with a non-number value", () => {
     const result = panelPersistedStateSchema.safeParse({
       ...validState,
-      paneSizes: { notes: "50%" },
+      panelSizes: { notes: "50%" },
     })
     expect(result.success).toBe(false)
   })
 
-  it("accepts an empty paneSizes map", () => {
+  it("accepts an empty panelSizes map", () => {
     const result = panelPersistedStateSchema.safeParse({
       ...validState,
-      paneSizes: {},
+      panelSizes: {},
     })
     expect(result.success).toBe(true)
   })

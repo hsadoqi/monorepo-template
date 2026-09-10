@@ -33,9 +33,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema.ts",
-    "./notes": "./src/notes/index.ts",
-    "./focus": "./src/focus/index.ts",
-    "./files": "./src/files/index.ts",
-    "./schedules": "./src/schedules/index.ts"
+    "./modules": "./src/panel-modules/index.ts",
+    "./capture-inbox": "./src/panel-modules/capture-inbox/index.ts",
+    "./notes": "./src/panel-modules/notes/index.ts",
+    "./focus": "./src/panel-modules/focus/index.ts",
+    "./files": "./src/panel-modules/files/index.ts",
+    "./schedules": "./src/panel-modules/schedules/index.ts"
   }
 }
