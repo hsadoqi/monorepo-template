@@ -3,7 +3,7 @@
 import { ArrowUpRight01Icon, Calendar03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
-import { UPCOMING_ITEMS } from "@/lib/upcoming-items"
+import { UPCOMING_ITEMS } from "@/lib/data/schedule-events"
 
 export type Project = {
   name: string
@@ -76,9 +76,15 @@ export const Schedule = () => (
       {UPCOMING_ITEMS.map((item) => (
         <div key={item.id} className="flex items-start gap-3">
           <div
-            className={`mt-1 flex size-8 shrink-0 items-center justify-center rounded-md ${item.iconBgClassName} ${item.iconColorClassName}`}
+            className={`mt-1 flex size-8 shrink-0 items-center justify-center rounded-md ${item.className}`}
           >
-            <HugeiconsIcon icon={item.icon} />
+            <HugeiconsIcon
+              icon={
+                typeof item.icon === "string"
+                  ? JSON.parse(item.icon)
+                  : item.icon
+              }
+            />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium">{item.title}</span>

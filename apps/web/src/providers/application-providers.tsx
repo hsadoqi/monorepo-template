@@ -87,7 +87,10 @@ import { useResolvedAppearance } from "../hooks/use-resolved-appearance"
 
 import { PreferencesPersistence } from "../preferences/preferences-persistence"
 import { UiApplicationProviders } from "./ui-application-providers"
-import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from "../components/theme/theme-definitions"
+import {
+  AVAILABLE_THEMES,
+  DEFAULT_THEME_ID,
+} from "../components/theme/theme-definitions"
 // import { ThemeToggleHotkey } from "@repo/ui-theme/components"
 export interface ApplicationProvidersProps {
   children: ReactNode

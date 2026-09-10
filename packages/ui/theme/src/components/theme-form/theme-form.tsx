@@ -227,7 +227,7 @@ export function ThemeForm({ className, onSave }: ThemeFormProps) {
     <div className="bg-muted/35 min-h-full p-3 sm:p-5 lg:p-6">
       <ThemePreview
         compilation={previewCompilation}
-        className="lg:sticky lg:top-6 lg:min-h-[38rem]"
+        className="lg:sticky lg:top-6 lg:min-h-152"
       />
       {!draftCompilation && (
         <p

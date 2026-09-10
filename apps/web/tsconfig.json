@@ -16,8 +16,7 @@
     "vitest.setup.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "@types/**/*.d.ts",
-    "../../packages/ui/panel/src/register-all.ts"
+    "@types/**/*.d.ts"
   ],
   "exclude": ["node_modules", ".next", ".turbo", "src/components/quarantine"]
 }

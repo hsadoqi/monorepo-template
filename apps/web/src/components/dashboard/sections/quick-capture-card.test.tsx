@@ -1,168 +1,222 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { beforeEach, describe, expect, it } from "vitest"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { useCaptureInboxStore } from "@repo/runtime-panel"
+import { type CaptureInboxItem, modulesStore } from "@repo/runtime-panel"
+
 import { QuickCaptureCard } from "./quick-capture-card"
+
+const CAPTURE_ID = "00000000-0000-4000-8000-000000000001"
+const CAPTURED_AT = new Date("2026-09-10T12:00:00.000Z").getTime()
+
+function createInboxItem(
+  overrides: Partial<CaptureInboxItem> = {}
+): CaptureInboxItem {
+  return {
+    id: "capture-1",
+    text: "Plan tomorrow",
+    status: "unsorted",
+    createdAt: CAPTURED_AT,
+    ...overrides,
+  }
+}
+
+function seedInbox(items: CaptureInboxItem[]) {
+  act(() => {
+    modulesStore.setState({
+      inboxItemEntities: Object.fromEntries(
+        items.map((item) => [item.id, item])
+      ),
+      inboxItemIds: items.map((item) => item.id),
+    })
+  })
+}
 
 describe("QuickCaptureCard", () => {
   beforeEach(() => {
     localStorage.clear()
-    useCaptureInboxStore.setState({ items: [] }, false)
+    seedInbox([])
+    vi.spyOn(crypto, "randomUUID").mockReturnValue(CAPTURE_ID)
+    vi.spyOn(Date, "now").mockReturnValue(CAPTURED_AT)
   })
 
-  it("captures text on Enter and clears the input", () => {
-    render(<QuickCaptureCard />)
-    const input = screen.getByPlaceholderText("What needs your attention?")
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
-    fireEvent.change(input, { target: { value: "Buy milk" } })
+  it("renders the empty capture form with an accessible collapsed review", () => {
+    render(<QuickCaptureCard />)
+
+    expect(
+      screen.getByRole("heading", { name: "Quick capture" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("Get it out of your head. Sort it later.")
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText("Capture a thought")).toHaveAttribute(
+      "placeholder",
+      "What needs your attention?"
+    )
+    expect(screen.getByText("Press Enter to save")).toBeInTheDocument()
+    expect(screen.getByText("0 unsorted items")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Review" })).toHaveAttribute(
+      "aria-expanded",
+      "false"
+    )
+    expect(screen.queryByText("Nothing to sort")).not.toBeInTheDocument()
+  })
+
+  it("captures a trimmed thought from the button and opens review", () => {
+    render(<QuickCaptureCard />)
+    const input = screen.getByLabelText("Capture a thought")
+
+    fireEvent.change(input, { target: { value: "  Book dentist  " } })
+    fireEvent.click(screen.getByRole("button", { name: "Capture" }))
+
+    expect(input).toHaveValue("")
+    expect(screen.getByText("1 unsorted item")).toBeInTheDocument()
+    expect(screen.getByText("Book dentist")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Review" })).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    )
+    expect(modulesStore.getState().inboxItemEntities[CAPTURE_ID]).toEqual({
+      id: CAPTURE_ID,
+      text: "Book dentist",
+      status: "unsorted",
+      createdAt: CAPTURED_AT,
+    })
+  })
+
+  it("captures a thought when Enter is pressed", () => {
+    render(<QuickCaptureCard />)
+    const input = screen.getByLabelText("Capture a thought")
+
+    fireEvent.change(input, { target: { value: "Follow up with Sam" } })
     fireEvent.keyDown(input, { key: "Enter" })
 
-    expect(useCaptureInboxStore.getState().items).toHaveLength(1)
-    expect(useCaptureInboxStore.getState().items[0]?.text).toBe("Buy milk")
+    expect(screen.getByText("Follow up with Sam")).toBeInTheDocument()
+    expect(screen.getByText("1 unsorted item")).toBeInTheDocument()
     expect(input).toHaveValue("")
   })
 
-  it("captures text when the Capture button is clicked", () => {
+  it("ignores empty and whitespace-only captures", () => {
     render(<QuickCaptureCard />)
-    const input = screen.getByPlaceholderText("What needs your attention?")
+    const input = screen.getByLabelText("Capture a thought")
 
-    fireEvent.change(input, { target: { value: "Call dentist" } })
     fireEvent.click(screen.getByRole("button", { name: "Capture" }))
-
-    expect(useCaptureInboxStore.getState().items).toHaveLength(1)
-  })
-
-  it("does not capture empty or whitespace-only text", () => {
-    render(<QuickCaptureCard />)
-    const input = screen.getByPlaceholderText("What needs your attention?")
-
     fireEvent.change(input, { target: { value: "   " } })
     fireEvent.keyDown(input, { key: "Enter" })
 
-    expect(useCaptureInboxStore.getState().items).toHaveLength(0)
+    expect(modulesStore.getState().inboxItemIds).toEqual([])
+    expect(crypto.randomUUID).not.toHaveBeenCalled()
+    expect(screen.getByText("0 unsorted items")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Review" })).toHaveAttribute(
+      "aria-expanded",
+      "false"
+    )
   })
 
-  it("shows a derived unsorted count instead of a hardcoded one", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
-    useCaptureInboxStore.getState().capture("Call dentist")
+  it("toggles review and shows its empty state", () => {
+    render(<QuickCaptureCard />)
+    const reviewButton = screen.getByRole("button", { name: "Review" })
 
+    fireEvent.click(reviewButton)
+    expect(reviewButton).toHaveAttribute("aria-expanded", "true")
+    expect(screen.getByText("Nothing to sort")).toBeInTheDocument()
+
+    fireEvent.click(reviewButton)
+    expect(reviewButton).toHaveAttribute("aria-expanded", "false")
+    expect(screen.queryByText("Nothing to sort")).not.toBeInTheDocument()
+  })
+
+  it("counts and reviews only unsorted items in store order", () => {
+    seedInbox([
+      createInboxItem({ id: "first", text: "First thought" }),
+      createInboxItem({
+        id: "archived",
+        text: "Already handled",
+        status: "archived",
+      }),
+      createInboxItem({ id: "second", text: "Second thought" }),
+    ])
     render(<QuickCaptureCard />)
 
     expect(screen.getByText("2 unsorted items")).toBeInTheDocument()
-  })
-
-  it("shows singular copy for exactly one unsorted item", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
-
-    render(<QuickCaptureCard />)
-
-    expect(screen.getByText("1 unsorted item")).toBeInTheDocument()
-  })
-
-  it("shows an empty state when Review is opened with nothing unsorted", () => {
-    render(<QuickCaptureCard />)
-
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
 
-    expect(screen.getByText("Nothing to sort")).toBeInTheDocument()
+    expect(screen.getByText("First thought")).toBeInTheDocument()
+    expect(screen.getByText("Second thought")).toBeInTheDocument()
+    expect(screen.queryByText("Already handled")).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("button", {
+        name: 'Item 1: Archive ("First thought")',
+      })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", {
+        name: 'Item 2: Archive ("Second thought")',
+      })
+    ).toBeInTheDocument()
   })
 
-  it("lists unsorted items when Review is opened", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
+  it.each(["task", "note", "reference"] as const)(
+    "changes an unsorted item type to %s",
+    (type) => {
+      const item = createInboxItem()
+      seedInbox([item])
+      render(<QuickCaptureCard />)
+      fireEvent.click(screen.getByRole("button", { name: "Review" }))
 
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: `Item 1: Change type to ${type} ("${item.text}")`,
+        })
+      )
+
+      expect(modulesStore.getState().inboxItemEntities[item.id]?.type).toBe(
+        type
+      )
+      expect(screen.getByText(item.text)).toBeInTheDocument()
+    }
+  )
+
+  it("archives an item and updates the visible review", () => {
+    const item = createInboxItem()
+    seedInbox([item])
     render(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
 
-    expect(screen.getByText("Buy milk")).toBeInTheDocument()
-  })
-
-  it("tags an item and removes it from the unsorted list", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
-
-    render(<QuickCaptureCard />)
-    fireEvent.click(screen.getByRole("button", { name: "Review" }))
     fireEvent.click(
       screen.getByRole("button", {
-        name: 'Item 1: Tag as task ("Buy milk")',
+        name: `Item 1: Archive ("${item.text}")`,
       })
     )
 
-    expect(useCaptureInboxStore.getState().items[0]).toMatchObject({
-      status: "archived",
-      tag: "task",
-    })
-    expect(screen.queryByText("Buy milk")).not.toBeInTheDocument()
+    expect(modulesStore.getState().inboxItemEntities[item.id]?.status).toBe(
+      "archived"
+    )
+    expect(screen.getByText("0 unsorted items")).toBeInTheDocument()
+    expect(screen.queryByText(item.text)).not.toBeInTheDocument()
     expect(screen.getByText("Nothing to sort")).toBeInTheDocument()
   })
 
-  it("archives an item without a tag", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
-
+  it("deletes an item from the inbox", () => {
+    const item = createInboxItem()
+    seedInbox([item])
     render(<QuickCaptureCard />)
     fireEvent.click(screen.getByRole("button", { name: "Review" }))
+
+    const row = screen.getByText(item.text).parentElement
+    expect(row).not.toBeNull()
     fireEvent.click(
-      screen.getByRole("button", { name: 'Item 1: Archive ("Buy milk")' })
-    )
-
-    expect(useCaptureInboxStore.getState().items[0]).toMatchObject({
-      status: "archived",
-      tag: undefined,
-    })
-  })
-
-  it("deletes an item entirely", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
-
-    render(<QuickCaptureCard />)
-    fireEvent.click(screen.getByRole("button", { name: "Review" }))
-    fireEvent.click(
-      screen.getByRole("button", { name: 'Item 1: Delete ("Buy milk")' })
-    )
-
-    expect(useCaptureInboxStore.getState().items).toHaveLength(0)
-  })
-
-  it("gives items with identical text distinct accessible names in the triage list", () => {
-    useCaptureInboxStore.getState().capture("Buy milk")
-    useCaptureInboxStore.getState().capture("Buy milk")
-
-    render(<QuickCaptureCard />)
-    fireEvent.click(screen.getByRole("button", { name: "Review" }))
-
-    expect(
-      screen.getByRole("button", { name: 'Item 1: Archive ("Buy milk")' })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: 'Item 2: Archive ("Buy milk")' })
-    ).toBeInTheDocument()
-  })
-
-  it("restores previously captured items after a reload (rehydration)", async () => {
-    // Seed localStorage directly, as if a previous session had already
-    // persisted this item, without going through the live store instance
-    // (calling the store's own setState/capture here would immediately
-    // re-persist and mask what we're testing).
-    localStorage.setItem(
-      "capture-inbox-store",
-      JSON.stringify({
-        state: {
-          items: [
-            {
-              id: "seeded-1",
-              text: "Buy milk",
-              createdAt: "2026-09-07T12:00:00.000Z",
-              status: "unsorted",
-            },
-          ],
-        },
-        version: 1,
+      within(row!).getByRole("button", {
+        name: `Item 1: Delete ("${item.text}")`,
       })
     )
 
-    render(<QuickCaptureCard />)
-
-    await waitFor(() => {
-      expect(screen.getByText("1 unsorted item")).toBeInTheDocument()
-    })
+    expect(modulesStore.getState().inboxItemIds).toEqual([])
+    expect(modulesStore.getState().inboxItemEntities[item.id]).toBeUndefined()
+    expect(screen.getByText("0 unsorted items")).toBeInTheDocument()
+    expect(screen.getByText("Nothing to sort")).toBeInTheDocument()
   })
 })

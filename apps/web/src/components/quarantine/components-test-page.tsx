@@ -1,7 +1,7 @@
 "use client"
 
-import { generateShadeScale } from "@repo/domain-theme/colors";
-import { useOklchColor } from "@repo/ui-theme/hooks";
+import { generateShadeScale } from "@repo/domain-theme/colors"
+import { useOklchColor } from "@repo/ui-theme/hooks"
 
 const initialPrimary = {
   l: 0.55,

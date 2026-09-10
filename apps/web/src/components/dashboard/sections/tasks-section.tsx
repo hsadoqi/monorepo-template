@@ -1,7 +1,5 @@
-
-import { QuickCaptureCard } from "./quick-capture-card";
-import { UpcomingTasksCard, type Task } from "./upcoming-tasks-card";
-
+import { QuickCaptureCard } from "./quick-capture-card"
+import { UpcomingTasksCard, type Task } from "./upcoming-tasks-card"
 
 export const TasksSection = ({ tasks }: { tasks: Task[] }) => {
   return (

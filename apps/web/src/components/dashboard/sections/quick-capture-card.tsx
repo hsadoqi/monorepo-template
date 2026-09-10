@@ -1,34 +1,43 @@
 "use client"
 
 import { useState, type KeyboardEvent } from "react"
-import { useStore } from "zustand/react"
 import { InboxIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
 import { Input } from "@repo/ui-components/base/input"
 
-import { useRehydrateStore } from "@repo/services-zustand/react"
-
 import {
-  useCaptureInboxStore,
-  type CaptureItem,
-  type CaptureTag,
+  type CaptureInboxItemType,
+  type CaptureInboxItemStatus,
+  type CaptureInboxItem,
+  useModulesStore,
 } from "@repo/runtime-panel"
 
-const TAG_OPTIONS: readonly CaptureTag[] = ["task", "note", "reference"]
+const TAG_OPTIONS: readonly CaptureInboxItemType[] = [
+  "task",
+  "note",
+  "reference",
+]
 
 function TriageRow({
   item,
   position,
 }: {
-  item: CaptureItem
+  item: CaptureInboxItem
   position: number
 }) {
-  const tag = useStore(useCaptureInboxStore, (state) => state.tag)
-  const archive = useStore(useCaptureInboxStore, (state) => state.archive)
-  const deleteItem = useStore(useCaptureInboxStore, (state) => state.delete)
+  const updateInboxItem = useModulesStore((state) => state.updateInboxItem)
+  const deleteItem = useModulesStore((state) => state.removeInboxItem)
   const describe = (action: string) =>
     `Item ${position}: ${action} ("${item.text}")`
+
+  const changeType = ({ type }: { type: CaptureInboxItemType }) => {
+    updateInboxItem(item.id, { type })
+  }
+
+  const archive = ({ status }: { status: CaptureInboxItemStatus }) => {
+    updateInboxItem(item.id, { status })
+  }
 
   return (
     <div className="flex items-center justify-between gap-3 py-2">
@@ -39,8 +48,8 @@ function TriageRow({
             key={option}
             variant="outline"
             size="xs"
-            aria-label={describe(`Tag as ${option}`)}
-            onClick={() => tag(item.id, option)}
+            aria-label={describe(`Change type to ${option}`)}
+            onClick={() => changeType({ type: option })}
           >
             {option[0]!.toUpperCase()}
             {option.slice(1)}
@@ -50,7 +59,7 @@ function TriageRow({
           variant="ghost"
           size="xs"
           aria-label={describe("Archive")}
-          onClick={() => archive(item.id)}
+          onClick={() => archive({ status: "archived" })}
         >
           Archive
         </Button>
@@ -68,18 +77,24 @@ function TriageRow({
 }
 
 export function QuickCaptureCard() {
-  useRehydrateStore(useCaptureInboxStore)
-
   const [draft, setDraft] = useState("")
   const [isReviewOpen, setIsReviewOpen] = useState(false)
-  const capture = useStore(useCaptureInboxStore, (state) => state.capture)
-  const items = useStore(useCaptureInboxStore, (state) => state.items)
-  const unsortedItems = items.filter((item) => item.status === "unsorted")
+  const capture = useModulesStore((state) => state.addInboxItem)
+  const itemIds = useModulesStore((state) => state.inboxItemIds)
+  const itemEntities = useModulesStore((state) => state.inboxItemEntities)
+  const items = itemIds.map((id) => itemEntities[id])
+  const unsortedItems = items.filter((item) => item?.status === "unsorted")
   const unsortedCount = unsortedItems.length
 
   function handleCapture() {
     if (!draft.trim()) return
-    capture(draft)
+    capture({
+      id: crypto.randomUUID(),
+      text: draft.trim(),
+      status: "unsorted",
+      createdAt: Date.now(),
+    })
+    setIsReviewOpen(true)
     setDraft("")
   }
 
@@ -136,9 +151,12 @@ export function QuickCaptureCard() {
               Nothing to sort
             </p>
           ) : (
-            unsortedItems.map((item, index) => (
-              <TriageRow key={item.id} item={item} position={index + 1} />
-            ))
+            unsortedItems.map(
+              (item, index) =>
+                item && (
+                  <TriageRow key={item?.id} item={item} position={index + 1} />
+                )
+            )
           )}
         </div>
       )}

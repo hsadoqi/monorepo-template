@@ -1,5 +1,5 @@
-import { DashboardContent } from "./dashboard-content";
-import { DashboardHeader } from "./dashboard-header";
+import { DashboardContent } from "./dashboard-content"
+import { DashboardHeader } from "./dashboard-header"
 
 export default function DashboardContainer() {
   return (
