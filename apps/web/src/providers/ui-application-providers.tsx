@@ -11,7 +11,7 @@ const UiApplicationContext = createContext<{
   status: "idle",
 })
 
-export const UiApplicationProvider = ({
+export const UiApplicationProviders = ({
   children,
 }: {
   children: React.ReactNode

@@ -2,19 +2,20 @@
 
 import { SidebarInset } from "@repo/ui-components/base/sidebar"
 import { GlobalPanel } from "@/components/panel/global-panel"
-import { AppContentHeader } from "./app-content-header"
-import { AppSidebar } from "./app-sidebar"
+import { AppHeader } from "./app-header"
+import { AppSidebar } from "./app-sidebar/app-sidebar"
+import { AppContent } from "./app-content";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex min-h-0 flex-1 flex-col">
-          <AppContentHeader />
+        <AppHeader />
+        <AppContent>
           <GlobalPanel />
           {children}
-        </div>
+        </AppContent>
       </SidebarInset>
     </>
   )

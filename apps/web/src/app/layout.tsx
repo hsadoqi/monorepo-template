@@ -7,7 +7,7 @@ import { Geist_Mono, IBM_Plex_Sans, Raleway } from "next/font/google"
 import Script from "next/script"
 import React, { type ReactNode } from "react"
 import { ApplicationProviders } from "../providers/application-providers"
-import AppShell from "./app-shell"
+import AppShell from "@/components/core/app-shell"
 import "./globals.css"
 
 const raleway = Raleway({
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         raleway.variable,
         ibmPlexSans.variable,
         geistMono.variable,
-        "bg-background text-foreground relative min-h-svh w-full max-w-full overflow-x-hidden",
+        "bg-background text-foreground relative h-svh w-full max-w-full overflow-hidden",
         {
           dark: explicitAppearance === "dark",
           light: explicitAppearance === "light",
@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       }
       suppressHydrationWarning={needsHydrationSuppression}
     >
-      <body className="bg-background text-foreground size-full min-h-screen max-w-screen overflow-x-hidden antialiased">
+      <body className="bg-background text-foreground size-full h-svh max-w-screen overflow-hidden antialiased">
         <Script
           id="appearance-bootstrap"
           strategy="beforeInteractive"

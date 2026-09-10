@@ -1,25 +1,23 @@
 "use client"
 
 import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components"
 import {
   ArrowUpRight01Icon,
   CheckmarkCircle02Icon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@repo/ui-components/base/badge"
 import { MoreHorizontalIcon, SparklesIcon } from "@hugeicons/core-free-icons"
-// import { QuickCaptureCard } from "../../components/quarantine/quick-capture-card"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-export type Task = {
-  title: string
-  project: string
-  due: string
-  priority: string
+export interface Task {
+  title: string;
+  project: string;
+  due: string;
+  priority: string;
 }
-
 export const UpcomingTasksCard = ({ tasks }: { tasks: Task[] }) => {
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.8fr)]">
       <div className="border-border bg-card flex flex-col gap-5 rounded-xl border p-5 md:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -31,13 +29,9 @@ export const UpcomingTasksCard = ({ tasks }: { tasks: Task[] }) => {
               Three things that will move the week forward.
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="More focus options"
-          >
+          <IconButton variant="ghost" size="icon-sm" label="More focus options">
             <HugeiconsIcon icon={MoreHorizontalIcon} />
-          </Button>
+          </IconButton>
         </div>
         <div className="divide-border flex flex-col divide-y">
           {tasks.map((task) => (
@@ -81,9 +75,6 @@ export const UpcomingTasksCard = ({ tasks }: { tasks: Task[] }) => {
           View all tasks
           <HugeiconsIcon icon={ArrowUpRight01Icon} data-icon="inline-end" />
         </Button>
-      </div>
-
-      {/* <QuickCaptureCard /> */}
-    </section>
+    </div>
   )
 }

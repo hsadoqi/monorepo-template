@@ -86,8 +86,8 @@ import { AppearanceBridge } from "./appearance-bridge"
 import { useResolvedAppearance } from "../hooks/use-resolved-appearance"
 
 import { PreferencesPersistence } from "../preferences/preferences-persistence"
-import { UiApplicationProvider } from "./ui-application-providers"
-import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from "../app/theme-definitions"
+import { UiApplicationProviders } from "./ui-application-providers"
+import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from "../components/theme/theme-definitions"
 // import { ThemeToggleHotkey } from "@repo/ui-theme/components"
 export interface ApplicationProvidersProps {
   children: ReactNode
@@ -177,10 +177,10 @@ export function ApplicationProviders({
       >
         <PreferencesProvider initialPreferences={initialPreferences}>
           <RootThemeScope>
-            <UiApplicationProvider>
+            <UiApplicationProviders>
               <PreferencesPersistence />
               <AppearanceBridge>{children}</AppearanceBridge>
-            </UiApplicationProvider>
+            </UiApplicationProviders>
           </RootThemeScope>
         </PreferencesProvider>
       </ThemeRegistryProvider>

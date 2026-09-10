@@ -4,7 +4,7 @@ import { Moon02Icon, Sun03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { useSetAppearancePreference } from "@repo/runtime-preferences"
-import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components"
 
 import { useResolvedAppearance } from "@/hooks/use-resolved-appearance"
 
@@ -21,17 +21,15 @@ export function AppearanceToggle() {
   const isDark = resolvedAppearance === "dark"
 
   return (
-    <Button
+    <IconButton
       type="button"
       variant="outline"
       size="icon-sm"
       aria-pressed={isDark}
+      label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       onClick={() => setPreference(isDark ? "light" : "dark")}
     >
       <HugeiconsIcon icon={isDark ? Sun03Icon : Moon02Icon} />
-      <span className="sr-only">
-        {isDark ? "Switch to light theme" : "Switch to dark theme"}
-      </span>
-    </Button>
+    </IconButton>
   )
 }
