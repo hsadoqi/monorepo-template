@@ -1,36 +1,26 @@
-// apps/web/src/components/panel/global-panel.tsx
 "use client"
 
-import "../register-all"
-import { useRehydrateStore } from "@repo/services-zustand/react"
-import { UtilityPanel } from "@repo/ui-components/components/panel"
-import { getPanelModules } from "@repo/runtime-panel/registry"
-import { modulesStore } from "@repo/runtime-panel/modules-store"
-import { panelStore, usePanelStore } from "@/hooks/use-panel-store"
+import "@repo/ui-panel/register-all"
+import { UtilityPanel } from "@repo/ui-panel/utility-panel"
+import { useGlobalPanel } from "@repo/runtime-panel"
 
 export function GlobalPanel() {
-  useRehydrateStore(panelStore)
-  useRehydrateStore(modulesStore)
-
-  const isOpen = usePanelStore((state) => state.isOpen)
-  const isLocked = usePanelStore((state) => state.isLocked)
-  const activeModuleIds = usePanelStore((state) => state.activeModuleIds)
-  const paneSizes = usePanelStore((state) => state.paneSizes)
-  const close = usePanelStore((state) => state.close)
-  const toggleLock = usePanelStore((state) => state.toggleLock)
-  const setPaneSizes = usePanelStore((state) => state.setPaneSizes)
-  const toggleModuleVisibility = usePanelStore(
-    (state) => state.toggleModuleVisibility
-  )
-  const reorderModule = usePanelStore((state) => state.reorderModule)
-
+  const {
+    uiState: { isOpen, isLocked, toggleLock, panelSizes, setPanelSizes },
+    modules: {
+      activeModules,
+      activeIds,
+      reorderModule,
+      toggleModuleVisibility,
+    },
+  } = useGlobalPanel()
   return (
     <UtilityPanel
       isOpen={isOpen}
-      modules={[...getPanelModules()]}
-      activeModuleIds={activeModuleIds}
-      paneSizes={paneSizes}
-      onPaneSizesChange={setPaneSizes}
+      modules={[...activeModules]}
+      activeModuleIds={activeIds}
+      paneSizes={panelSizes}
+      onPaneSizesChange={setPanelSizes}
       isLocked={isLocked}
       onToggleLock={toggleLock}
       onToggleModuleVisibility={toggleModuleVisibility}

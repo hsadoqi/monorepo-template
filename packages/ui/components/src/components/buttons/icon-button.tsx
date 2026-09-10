@@ -12,7 +12,12 @@ import {
   TooltipTrigger,
 } from "@repo/ui-components/base/tooltip"
 
-const ICON_SIZES = new Set<ButtonSize>(["icon", "icon-xs", "icon-sm", "icon-lg"])
+const ICON_SIZES = new Set<ButtonSize>([
+  "icon",
+  "icon-xs",
+  "icon-sm",
+  "icon-lg",
+])
 
 function mergeRefs<T>(...refs: Array<Ref<T> | undefined>) {
   return (node: T) => {
