@@ -9,7 +9,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.{ts,tsx,mjs,js,json,css,md}\"",
+    "format": "prettier ./src --write \"**/*.{ts,tsx,mj,json,css,md}\"",
+    "format:check": "prettier ./src --check \"**/*.{ts,tsx,mjs,json,css,md}\"",
     "check-types": "tsc --noEmit",
     "test:run": "vitest run --coverage"
   },
@@ -19,6 +20,7 @@
     "@repo/foundation-typescript-config": "workspace:*",
     "@repo/foundation-vitest-config": "workspace:*",
     "@types/node": "^26.4.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",

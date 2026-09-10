@@ -7,8 +7,5 @@
   "exports": {
     ".": "./index.mjs",
     "./tailwind": "./tailwindcss.mjs"
-  },
-  "peerDependencies": {
-    "prettier": "^3.9.0"
   }
 }

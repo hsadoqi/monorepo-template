@@ -1,10 +1,13 @@
 {
   "extends": "@repo/foundation-typescript-config/base.json",
+  "compilerOptions": {
+    "types": ["vitest/globals"]
+  },
   "include": [
     "apps",
     "packages",
     "*/*.ts",
-    "*/*.tsx",
+    "*/*.tsx"
   ],
   "exclude": [
     "node_modules",

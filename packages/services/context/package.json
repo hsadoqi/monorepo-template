@@ -21,19 +21,19 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@repo/foundation-typescript-config": "workspace:*",
     "@repo/foundation-eslint-config": "workspace:*",
     "@repo/foundation-prettier-config": "workspace:*",
+    "@repo/foundation-typescript-config": "workspace:*",
     "@repo/foundation-vitest-config": "workspace:*",
     "@repo/foundation-vitest-utils": "workspace:*",
-    "@types/react": "19.2.0",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "19.2.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
-    "typescript": "^6.0.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
   }
 }

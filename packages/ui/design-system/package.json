@@ -25,11 +25,11 @@
     "@repo/foundation-vitest-utils": "workspace:*",
     "@types/culori": "^4.0.1",
     "@types/node": "^26.4.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "culori": "^4.0.1",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11"
+    "vitest": "^4.1.11"
   }
 }

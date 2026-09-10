@@ -44,6 +44,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# beste.co UI reference pieces (design reference only, not shipped code)
+apps/web/src/components/beste
+
 # internal docs/archives
 .docs
 .archives
@@ -60,3 +63,4 @@ PRODUCT.md
 .codex
 .agents
 scripts
+work

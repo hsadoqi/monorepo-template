@@ -24,5 +24,8 @@
   },
   "peerDependencies": {
     "eslint": "^9.0.0"
+  },
+  "devDependencies": {
+    "debug": "^4.4.3"
   }
 }

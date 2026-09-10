@@ -9,11 +9,11 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@hugeicons/core-free-icons": "^4.3.0",
+    "@hugeicons/react": "^1.1.10",
     "@repo/domain-preferences": "workspace:*",
     "@repo/runtime-preferences": "workspace:*",
-    "@repo/ui-components": "workspace:*",
-    "@hugeicons/core-free-icons": "^4.3.0",
-    "@hugeicons/react": "^1.1.10"
+    "@repo/ui-components": "workspace:*"
   },
   "scripts": {
     "lint": "eslint .",
@@ -31,15 +31,15 @@
     "@repo/foundation-vitest-utils": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.4.0",
-    "@types/react": "^19.2.18",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.5",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11"
+    "vitest": "^4.1.11"
   },
   "exports": {
     ".": "./src/index.ts",
