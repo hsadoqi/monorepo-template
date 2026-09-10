@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Input } from "@repo/ui-components/base/input"
 import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components"
 import { useModulesStore } from "@repo/runtime-panel"
 
 export function NotesModule() {
@@ -43,14 +44,14 @@ export function NotesModule() {
               className="flex items-center justify-between gap-2"
             >
               <span className="text-sm">{note.text}</span>
-              <Button
+              <IconButton
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Delete ${note.text}`}
+                label={`Delete ${note.text}`}
                 onClick={() => deleteNote(note.id)}
               >
                 ×
-              </Button>
+              </IconButton>
             </li>
           )
         })}

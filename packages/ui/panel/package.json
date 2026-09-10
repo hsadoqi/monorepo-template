@@ -47,13 +47,13 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./notes": "./src/notes/index.ts",
-    "./notes/register": "./src/notes/register.ts",
-    "./schedule": "./src/schedule/index.ts",
-    "./schedule/register": "./src/schedule/register.ts",
-    "./focus": "./src/focus/index.ts",
-    "./focus/register": "./src/focus/register.ts",
-    "./files": "./src/files/index.ts",
-    "./files/register": "./src/files/register.ts"
+    "./notes": "./src/panel-modules/notes/index.ts",
+    "./notes/register": "./src/panel-modules/notes/register.ts",
+    "./schedule": "./src/panel-modules/schedule/index.ts",
+    "./schedule/register": "./src/panel-modules/schedule/register.ts",
+    "./focus": "./src/panel-modules/focus/index.ts",
+    "./focus/register": "./src/panel-modules/focus/register.ts",
+    "./files": "./src/panel-modules/files/index.ts",
+    "./files/register": "./src/panel-modules/files/register.ts"
   }
 }

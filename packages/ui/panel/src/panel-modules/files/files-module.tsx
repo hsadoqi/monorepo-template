@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { Upload } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components"
 import { useModulesStore } from "@repo/runtime-panel"
 import { saveFileBlob, deleteFileBlob } from "./file-storage"
 
@@ -68,17 +69,17 @@ export function FilesModule() {
               className="flex items-center justify-between gap-2"
             >
               <span className="truncate text-sm">{file.name}</span>
-              <Button
+              <IconButton
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Remove ${file.name}`}
+                label={`Remove ${file.name}`}
                 onClick={async () => {
                   await deleteFileBlob(file.id)
                   removeFileMetadata(file.id)
                 }}
               >
                 ×
-              </Button>
+              </IconButton>
             </li>
           )
         })}

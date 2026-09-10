@@ -5,6 +5,7 @@ import { FlashIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Input } from "@repo/ui-components/base/input"
 import { Button } from "@repo/ui-components/base/button"
+import { IconButton } from "@repo/ui-components"
 import { useModulesStore } from "@repo/runtime-panel"
 
 const QUICK_CREATE_PRESETS = [
@@ -102,15 +103,15 @@ export function ScheduleModule() {
                 <span className="text-card-foreground flex-1 truncate text-sm">
                   {event.title}
                 </span>
-                <Button
+                <IconButton
                   variant="ghost"
                   size="icon-sm"
                   className="opacity-0 group-hover:opacity-100"
-                  aria-label={`Delete ${event.title}`}
+                  label={`Delete ${event.title}`}
                   onClick={() => deleteScheduleEvent(event.id)}
                 >
                   ×
-                </Button>
+                </IconButton>
               </li>
             ))}
           </ul>
