@@ -1,8 +1,8 @@
 "use client"
 
 import { createStore } from "zustand"
-import { useStore } from "zustand/react"
 import { persist } from "zustand/middleware"
+import type { StoreApi } from "zustand/vanilla"
 import { createPersistOptions, getLocalStorage } from "@repo/services-zustand"
 import { z } from "zod"
 import {
@@ -27,6 +27,8 @@ export interface ModulesState
     FilesSlice,
     SchedulesSlice,
     CaptureInboxItemsSlice {}
+
+export type ModulesStoreApi = StoreApi<ModulesState>
 
 type ModulesPersistedState = z.infer<typeof modulesPersistedStateSchema>
 
@@ -113,12 +115,4 @@ export function createModulesStore(version: number) {
       }) as any
     )
   )
-}
-
-/** Vanilla store — use for non-React code and tests. */
-export const modulesStore = createModulesStore(1)
-
-/** React hook wrapper — component call-sites use this like a bound zustand hook. */
-export function useModulesStore<T>(selector: (state: ModulesState) => T): T {
-  return useStore(modulesStore, selector)
 }

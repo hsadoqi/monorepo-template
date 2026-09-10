@@ -43,3 +43,21 @@ export type {
  */
 export { Badge, badgeVariants } from "./badge"
 export type { BadgeProps, BadgeVariant } from "./badge"
+export { Checkbox } from "./checkbox"
+export { Calendar, CalendarDayButton } from "./calendar"
+export {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./collapsible"
+export {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "./command"

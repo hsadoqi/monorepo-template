@@ -68,7 +68,6 @@
     "./base": "./src/base/ui/index.ts",
     "./base/*": "./src/base/ui/*.tsx",
     "./components/feedback": "./src/components/feedback/index.ts",
-    "./components/panel": "./src/components/panel/index.ts",
     "./hooks/*": "./src/hooks/*.ts"
   }
 }

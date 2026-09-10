@@ -1,27 +1,18 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
-import { modulesStore } from "@repo/runtime-panel"
+import { screen, fireEvent } from "@testing-library/react"
+import { renderWithModulesStore } from "../../../test-utils/render-with-modules-store"
+import { createModulesStore, type ModulesStoreApi } from "@repo/runtime-panel"
 import { SchedulesModule } from "./schedules-module"
 
+let modulesStore: ModulesStoreApi
+
 beforeEach(() => {
-  modulesStore.setState(
-    {
-      noteEntities: {},
-      noteIds: [],
-      endTimestamp: null,
-      isRunning: false,
-      fileEntities: {},
-      fileIds: [],
-      scheduleEntities: {},
-      scheduleIds: [],
-    },
-    false
-  )
+  modulesStore = createModulesStore(1)
 })
 
 describe("ScheduleModule", () => {
   it("adds an event when the form is submitted", () => {
-    render(<SchedulesModule />)
+    renderWithModulesStore(<SchedulesModule />, modulesStore)
     fireEvent.change(screen.getByLabelText(/event title/i), {
       target: { value: "Team sync" },
     })
@@ -36,7 +27,7 @@ describe("ScheduleModule", () => {
   })
 
   it("does not add an event missing a title or time", () => {
-    render(<SchedulesModule />)
+    renderWithModulesStore(<SchedulesModule />, modulesStore)
     fireEvent.change(screen.getByLabelText(/event title/i), {
       target: { value: "Team sync" },
     })
@@ -45,7 +36,7 @@ describe("ScheduleModule", () => {
   })
 
   it("adds an event with a picked icon", () => {
-    render(<SchedulesModule />)
+    renderWithModulesStore(<SchedulesModule />, modulesStore)
     fireEvent.change(screen.getByLabelText(/event title/i), {
       target: { value: "Team sync" },
     })
@@ -62,7 +53,7 @@ describe("ScheduleModule", () => {
 
   it("deletes an event", () => {
     modulesStore.getState().addScheduleEvent("Team sync", "Today, 2:00 PM")
-    render(<SchedulesModule />)
+    renderWithModulesStore(<SchedulesModule />, modulesStore)
     fireEvent.click(screen.getByRole("button", { name: /delete team sync/i }))
     expect(screen.queryByText("Team sync")).not.toBeInTheDocument()
   })

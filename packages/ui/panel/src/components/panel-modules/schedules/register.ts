@@ -1,10 +1,10 @@
 import { Calendar03Icon } from "@hugeicons/core-free-icons"
-import { registerPanelModule } from "@repo/runtime-panel"
+import type { PanelModule } from "@repo/domain-panel/modules"
 import { SchedulesModule } from "./schedules-module"
 
-registerPanelModule({
+export const schedulesPanelModule: PanelModule = {
   id: "schedules",
   label: "Schedules",
   icon: Calendar03Icon,
   Content: SchedulesModule,
-})
+}

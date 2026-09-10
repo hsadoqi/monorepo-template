@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { modulesStore } from "./panel-modules-store"
+import { createModulesStore } from "./panel-modules-store"
+
+const modulesStore = createModulesStore(1)
 
 function resetStore() {
   modulesStore.setState(

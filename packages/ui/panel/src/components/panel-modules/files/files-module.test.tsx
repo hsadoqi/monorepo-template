@@ -1,21 +1,14 @@
 import "fake-indexeddb/auto"
 import { beforeEach, describe, expect, it } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import { modulesStore } from "@repo/runtime-panel"
+import { screen, fireEvent, waitFor } from "@testing-library/react"
+import { renderWithModulesStore } from "../../../test-utils/render-with-modules-store"
+import { createModulesStore, type ModulesStoreApi } from "@repo/runtime-panel"
 import { FilesModule } from "./files-module"
 
+let modulesStore: ModulesStoreApi
+
 beforeEach(() => {
-  modulesStore.setState(
-    {
-      noteEntities: {},
-      noteIds: [],
-      endTimestamp: null,
-      isRunning: false,
-      fileEntities: {},
-      fileIds: [],
-    },
-    false
-  )
+  modulesStore = createModulesStore(1)
 })
 
 function makeFile(name: string, sizeBytes: number): File {
@@ -24,7 +17,7 @@ function makeFile(name: string, sizeBytes: number): File {
 
 describe("FilesModule", () => {
   it("adds a file under the size limit and lists it", async () => {
-    render(<FilesModule />)
+    renderWithModulesStore(<FilesModule />, modulesStore)
     const input = screen.getByLabelText(/add file/i)
     fireEvent.change(input, {
       target: { files: [makeFile("notes.txt", 1024)] },
@@ -35,7 +28,7 @@ describe("FilesModule", () => {
   })
 
   it("rejects a file over 5MB with an inline message", async () => {
-    render(<FilesModule />)
+    renderWithModulesStore(<FilesModule />, modulesStore)
     const input = screen.getByLabelText(/add file/i)
     fireEvent.change(input, {
       target: { files: [makeFile("huge.bin", 6 * 1024 * 1024)] },
@@ -47,7 +40,7 @@ describe("FilesModule", () => {
   })
 
   it("removes a file", async () => {
-    render(<FilesModule />)
+    renderWithModulesStore(<FilesModule />, modulesStore)
     const input = screen.getByLabelText(/add file/i)
     fireEvent.change(input, { target: { files: [makeFile("notes.txt", 10)] } })
     await waitFor(() =>

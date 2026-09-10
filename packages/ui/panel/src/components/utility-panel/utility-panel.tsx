@@ -3,52 +3,41 @@
 import * as React from "react"
 import { useRef } from "react"
 import { cn } from "@repo/ui-components/lib/utils"
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@repo/ui-components/base/resizable"
 import { usePanelDismiss } from "../../hooks/use-panel-dismiss"
-import { PanelModule } from "@repo/domain-panel/modules"
-import { UtilityPanelHeader } from "./utility-panel-header"
+import type { PanelModule } from "@repo/domain-panel/modules"
+import { UtilityPanelLayout } from "./utility-panel-layout"
+import { useGlobalPanel } from "@repo/runtime-panel/use-global-panel"
 
 export interface UtilityPanelProps {
-  isOpen: boolean
   modules: PanelModule[]
-  activeModuleIds: string[]
-  paneSizes: Record<string, number>
-  onPaneSizesChange: (sizes: Record<string, number>) => void
-  isLocked: boolean
-  onToggleLock: () => void
-  onToggleModuleVisibility: (id: string) => void
-  onReorderModule: (id: string, direction: "up" | "down") => void
-  onOpenChange: (open: boolean) => void
   className?: string
 }
 
-export function UtilityPanel({
-  isOpen,
-  modules,
-  activeModuleIds,
-  paneSizes,
-  onPaneSizesChange,
-  isLocked,
-  onToggleLock,
-  onToggleModuleVisibility,
-  onReorderModule,
-  onOpenChange,
-  className,
-}: UtilityPanelProps) {
+export function UtilityPanel({ modules, className }: UtilityPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
-  usePanelDismiss({
-    enabled: isOpen && !isLocked,
-    onDismiss: () => onOpenChange(false),
-    panelRef,
-  })
+  const {
+    modules: { moduleIds, activeModuleId },
+    uiState: { isOpen, isLocked, close },
+  } = useGlobalPanel()
 
-  const visibleModules = activeModuleIds
+  const visibleModules = moduleIds
     .map((id) => modules.find((module) => module.id === id))
     .filter((module): module is PanelModule => module !== undefined)
+
+  const activeModule = React.useMemo(
+    () =>
+      visibleModules.find((module) => module.id === activeModuleId) ??
+      visibleModules[0],
+    [activeModuleId, visibleModules]
+  )
+
+  usePanelDismiss({
+    enabled: isOpen && !isLocked,
+    onDismiss: () => {
+      if (isOpen) close()
+    },
+    panelRef,
+  })
 
   return (
     <div
@@ -57,56 +46,23 @@ export function UtilityPanel({
       data-testid="utility-panel-root"
       data-open={isOpen}
       className={cn(
-        "grid grid-rows-[0fr] transition-[grid-template-rows] duration-200 ease-in-out motion-reduce:transition-none data-[open=true]:grid-rows-[1fr]",
+        "grid grid-rows-[0fr] transition-[grid-template-rows] duration-200 ease-in-out motion-reduce:transition-none data-[open=true]:grid-rows-[1fr] size-full overflow-hidden",
         className
       )}
     >
-      <div className="min-h-0 overflow-hidden">
+      <div className="min-h-0 overflow-hidden size-full">
         <div
-          className="border-border bg-background border-b"
+          className="border-border bg-background border-b size-full"
           aria-hidden={!isOpen}
           inert={!isOpen}
         >
-          <UtilityPanelHeader
-            isLocked={isLocked}
-            onToggleLock={onToggleLock}
-            onOpenChange={onOpenChange}
-            onReorderModule={onReorderModule}
-            onToggleModuleVisibility={onToggleModuleVisibility}
-            modules={modules}
-            activeModuleIds={activeModuleIds}
-          />
-          {visibleModules.length === 0 ? (
-            <p className="text-muted-foreground p-4 text-sm">
-              No modules are shown. Open &quot;Manage modules&quot; to add one.
-            </p>
-          ) : (
-            <ResizablePanelGroup
-              orientation="horizontal"
-              onLayoutChanged={(layout, meta) => {
-                if (meta.isUserInteraction) {
-                  onPaneSizesChange(layout)
-                }
-              }}
-            >
-              {visibleModules.map((module, index) => (
-                <React.Fragment key={module.id}>
-                  {index > 0 && <ResizableHandle withHandle />}
-                  <ResizablePanel
-                    id={module.id}
-                    defaultSize={String(
-                      paneSizes[module.id] ?? 100 / visibleModules.length
-                    )}
-                    minSize="15"
-                  >
-                    <div className="h-full min-w-0 p-4">
-                      <module.Content />
-                    </div>
-                  </ResizablePanel>
-                </React.Fragment>
-              ))}
-            </ResizablePanelGroup>
-          )}
+          <UtilityPanelLayout modules={modules}>
+            {activeModule?.Content && (
+              <div className="h-full min-w-0 p-4">
+                {React.createElement(activeModule.Content)}
+              </div>
+            )}
+          </UtilityPanelLayout>
         </div>
       </div>
     </div>

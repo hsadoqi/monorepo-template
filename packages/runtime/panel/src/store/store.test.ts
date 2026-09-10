@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { panelStore } from "./store"
+import { createPanelStore } from "./store"
+
+const panelStore = createPanelStore(3)
 
 function resetStore() {
   panelStore.setState(
     {
       isOpen: false,
       isLocked: false,
-      activeModuleIds: [],
+      moduleIds: [],
       panelSizes: {},
+      activeModuleId: "notes",
     },
     false
   )
@@ -30,18 +33,18 @@ describe("panelStore", () => {
     expect(panelStore.getState().isLocked).toBe(true)
   })
 
-  it("toggles module visibility, adding to the end of activeModuleIds", () => {
+  it("toggles module visibility, adding to the end of moduleIds", () => {
     panelStore.getState().toggleModuleVisibility("notes")
-    expect(panelStore.getState().activeModuleIds).toContain("notes")
+    expect(panelStore.getState().moduleIds).toContain("notes")
     panelStore.getState().toggleModuleVisibility("notes")
-    expect(panelStore.getState().activeModuleIds).not.toContain("notes")
+    expect(panelStore.getState().moduleIds).not.toContain("notes")
   })
 
   it("reorders a visible module", () => {
     panelStore.getState().toggleModuleVisibility("notes")
     panelStore.getState().toggleModuleVisibility("schedule")
     panelStore.getState().reorderModule("schedule", "up")
-    expect(panelStore.getState().activeModuleIds).toEqual(["schedule", "notes"])
+    expect(panelStore.getState().moduleIds).toEqual(["schedule", "notes"])
   })
 
   it("sets panel sizes", () => {
@@ -58,7 +61,7 @@ describe("panelStore", () => {
 
     await panelStore.persist.rehydrate()
 
-    expect(panelStore.getState().activeModuleIds).toEqual([])
+    expect(panelStore.getState().moduleIds).toEqual([])
     warnSpy.mockRestore()
   })
 
@@ -78,15 +81,16 @@ describe("panelStore", () => {
     warnSpy.mockRestore()
   })
 
-  it("migrates a stale empty activeModuleIds from before the default changed", async () => {
+  it("migrates a stale empty moduleIds from before the default changed", async () => {
     localStorage.setItem(
       "panel-store",
       JSON.stringify({
         state: {
           isOpen: false,
           isLocked: false,
-          activeModuleIds: [],
+          moduleIds: [],
           panelSizes: {},
+          activeModuleId: "notes",
         },
         version: 1,
       })
@@ -94,23 +98,86 @@ describe("panelStore", () => {
 
     await panelStore.persist.rehydrate()
 
-    expect(panelStore.getState().activeModuleIds).toEqual([
+    expect(panelStore.getState().moduleIds).toEqual([
+      "overview",
       "notes",
       "files",
-      "schedule",
+      "schedules",
       "focus",
+      "capture-inbox",
     ])
   })
 
-  it("preserves an intentionally empty activeModuleIds once persisted at the current version", async () => {
+  it("migrates a stale empty activeModuleId from before the default changed", async () => {
     localStorage.setItem(
       "panel-store",
       JSON.stringify({
         state: {
           isOpen: false,
           isLocked: false,
-          activeModuleIds: [],
+          moduleIds: ["notes", "files", "schedules", "focus", "capture-inbox"],
           panelSizes: {},
+          activeModuleId: "",
+        },
+        version: 1,
+      })
+    )
+
+    await panelStore.persist.rehydrate()
+
+    expect(panelStore.getState().activeModuleId).toEqual("overview")
+  })
+
+  it("preserves an intentionally empty moduleIds once persisted at the current version", async () => {
+    localStorage.setItem(
+      "panel-store",
+      JSON.stringify({
+        state: {
+          isOpen: false,
+          isLocked: false,
+          moduleIds: [],
+          panelSizes: {},
+          activeModuleId: "notes",
+        },
+        version: 3,
+      })
+    )
+
+    await panelStore.persist.rehydrate()
+
+    expect(panelStore.getState().moduleIds).toEqual([])
+  })
+
+  it("preserves an intentionally empty activeModuleId once persisted at the current version", async () => {
+    localStorage.setItem(
+      "panel-store",
+      JSON.stringify({
+        state: {
+          isOpen: false,
+          isLocked: false,
+          moduleIds: ["notes", "files", "schedules", "focus", "capture-inbox"],
+          panelSizes: {},
+          activeModuleId: "",
+        },
+        version: 3,
+      })
+    )
+
+    await panelStore.persist.rehydrate()
+
+    expect(panelStore.getState().activeModuleId).toEqual("")
+  })
+
+  it("adds overview ahead of an existing module order during version 2 migration", async () => {
+    localStorage.setItem(
+      "panel-store",
+      JSON.stringify({
+        state: {
+          isOpen: true,
+          isLocked: true,
+          moduleIds: ["focus", "notes"],
+          panelSizes: { focus: 60, notes: 40 },
+          activeModuleId: "focus",
         },
         version: 2,
       })
@@ -118,7 +185,13 @@ describe("panelStore", () => {
 
     await panelStore.persist.rehydrate()
 
-    expect(panelStore.getState().activeModuleIds).toEqual([])
+    expect(panelStore.getState()).toMatchObject({
+      isOpen: true,
+      isLocked: true,
+      moduleIds: ["overview", "focus", "notes"],
+      panelSizes: { focus: 60, notes: 40 },
+      activeModuleId: "focus",
+    })
   })
 
   it("does not throw when persisting a write fails, and keeps the in-memory update", () => {

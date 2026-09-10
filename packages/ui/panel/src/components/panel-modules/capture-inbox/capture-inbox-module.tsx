@@ -4,7 +4,7 @@ import { useRef, useState } from "react"
 import { InboxIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@repo/ui-components/base/button"
-import { IconButton } from "@repo/ui-components"
+import { IconButton } from "@repo/ui-components/buttons/icon-button"
 import { useModulesStore } from "@repo/runtime-panel"
 
 export function CaptureInboxModule() {
@@ -24,6 +24,7 @@ export function CaptureInboxModule() {
           createdAt: Date.now(),
           status: "unsorted",
         })
+        setError(null)
       } catch (err) {
         console.error("Failed to add inbox item:", err)
         setError("Failed to add inbox item.")
@@ -54,10 +55,6 @@ export function CaptureInboxModule() {
               if (e.key === "Enter") {
                 handleAddInboxItem()
               }
-            }}
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleAddInboxItem()
             }}
           />
           <Button variant="default" size="sm" onClick={handleAddInboxItem}>

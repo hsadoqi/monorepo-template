@@ -4,8 +4,9 @@ import { panelPersistedStateSchema } from "./schema"
 const validState = {
   isOpen: false,
   isLocked: false,
-  activeModuleIds: ["notes"],
+  moduleIds: ["notes"],
   panelSizes: { notes: 100 },
+  activeModuleId: "notes",
 }
 
 describe("panelPersistedStateSchema", () => {
@@ -21,10 +22,10 @@ describe("panelPersistedStateSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  it("rejects activeModuleIds containing a non-string", () => {
+  it("rejects moduleIds containing a non-string", () => {
     const result = panelPersistedStateSchema.safeParse({
       ...validState,
-      activeModuleIds: [1, 2],
+      moduleIds: [1, 2],
     })
     expect(result.success).toBe(false)
   })

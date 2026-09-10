@@ -1,7 +1,6 @@
 "use client"
 
 import { createStore } from "zustand"
-import { useStore } from "zustand/react"
 import { persist } from "zustand/middleware"
 import { createPersistOptions, getLocalStorage } from "@repo/services-zustand"
 
@@ -23,13 +22,22 @@ export interface PanelState extends PanelPersistedState {
   setPanelSizes: (sizes: Record<string, number>) => void
   toggleModuleVisibility: (id: string) => void
   reorderModule: (id: string, direction: "up" | "down") => void
+  setActiveModuleId: (id: string) => void
 }
 
 const DEFAULT_PERSISTED_STATE: PanelPersistedState = {
   isOpen: false,
   isLocked: false,
-  activeModuleIds: ["notes", "files", "schedule", "focus"],
+  moduleIds: [
+    "overview",
+    "notes",
+    "files",
+    "schedules",
+    "focus",
+    "capture-inbox",
+  ],
   panelSizes: {},
+  activeModuleId: "overview",
 }
 
 function moveId(ids: string[], id: string, direction: "up" | "down"): string[] {
@@ -67,39 +75,50 @@ export function createPanelStore(version: number) {
           setPanelSizes: (sizes) => safeSet({ panelSizes: sizes }),
           toggleModuleVisibility: (id) =>
             safeSet((state) => ({
-              activeModuleIds: state.activeModuleIds.includes(id)
-                ? state.activeModuleIds.filter((existing) => existing !== id)
-                : [...state.activeModuleIds, id],
+              moduleIds: state.moduleIds.includes(id)
+                ? state.moduleIds.filter((existing) => existing !== id)
+                : [...state.moduleIds, id],
             })),
           reorderModule: (id, direction) =>
             safeSet((state) => ({
-              activeModuleIds: moveId(state.activeModuleIds, id, direction),
+              moduleIds: moveId(state.moduleIds, id, direction),
             })),
+          setActiveModuleId: (id) => safeSet({ activeModuleId: id }),
         }
       },
       createPersistOptions<PanelState, PanelPersistedState>({
         name: "panel-store",
         version,
         getStorage: getLocalStorage,
-        migrate: (persistedState) => {
+        migrate: (persistedState, persistedVersion) => {
           const result = panelPersistedStateSchema.safeParse(persistedState)
           if (!result.success) {
             console.warn("Failed to restore panel state:", result.error)
             return DEFAULT_PERSISTED_STATE
           }
+          const moduleIds =
+            persistedVersion < 2 && result.data.moduleIds.length === 0
+              ? DEFAULT_PERSISTED_STATE.moduleIds
+              : result.data.moduleIds
+
           return {
             ...result.data,
-            activeModuleIds:
-              result.data.activeModuleIds.length > 0
-                ? result.data.activeModuleIds
-                : DEFAULT_PERSISTED_STATE.activeModuleIds,
+            moduleIds:
+              moduleIds.length > 0 && !moduleIds.includes("overview")
+                ? ["overview", ...moduleIds]
+                : moduleIds,
+            activeModuleId:
+              persistedVersion < 2 && !result.data.activeModuleId
+                ? DEFAULT_PERSISTED_STATE.activeModuleId
+                : result.data.activeModuleId,
           }
         },
         partialize: (state) => ({
           isOpen: state.isOpen,
           isLocked: state.isLocked,
-          activeModuleIds: state.activeModuleIds,
+          moduleIds: state.moduleIds,
           panelSizes: state.panelSizes,
+          activeModuleId: state.activeModuleId,
         }),
         merge: (persistedState, currentState) => {
           if (persistedState == null) return currentState
@@ -114,12 +133,4 @@ export function createPanelStore(version: number) {
       }) as any
     )
   )
-}
-
-/** Vanilla store — use for non-React code and tests (getState/setState/persist.rehydrate). */
-export const panelStore = createPanelStore(2)
-
-/** React hook wrapper — component call-sites use this exactly like a bound zustand hook. */
-export function usePanelStore<T>(selector: (state: PanelState) => T): T {
-  return useStore(panelStore, selector)
 }
