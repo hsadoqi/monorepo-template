@@ -65,6 +65,31 @@ export interface GenerateShadeScaleOptions {
   anchorShade?: ShadeStep
 }
 
+export type PaletteMode = "light" | "dark"
+
+export interface GeneratePaletteScaleOptions extends GenerateShadeScaleOptions {
+  /** Preserve the existing UI convention in which dark palettes run from
+   * darkest at 50 to lightest at 950. */
+  mode?: PaletteMode
+}
+
+/** Product-level chroma shape for Tailwind-style palette families. Values are
+ * normalized around the requested anchor, so the seed's own chroma is retained
+ * at that step rather than multiplied by the profile's absolute weight. */
+export const PALETTE_CHROMA_PROFILE: Record<ShadeStep, number> = {
+  50: 0.08,
+  100: 0.22,
+  200: 0.42,
+  300: 0.62,
+  400: 0.82,
+  500: 1.15,
+  600: 1.15,
+  700: 1,
+  800: 0.88,
+  900: 0.72,
+  950: 0.6,
+}
+
 const lastStep = SHADE_STEPS[SHADE_STEPS.length - 1] ?? 950
 let _LIGHT_REFERENCE_L: number | undefined
 let _DARK_REFERENCE_L: number | undefined
@@ -151,6 +176,54 @@ export function generateShadeScale({
       css: oklchToCss({ l: targetL, c: targetC, h }),
       inGamut,
       isBase,
+    }
+  })
+}
+
+/**
+ * Generate the canonical product palette consumed by compilation and preview.
+ *
+ * `generateShadeScale` remains the lower-level anchor-relative lightness
+ * primitive. This function adds the shared chroma profile, appearance ordering,
+ * serialization, and per-step sRGB gamut fitting required by a usable palette
+ * family.
+ */
+export function generatePaletteScale({
+  color,
+  anchorShade = 500,
+  mode = "light",
+}: GeneratePaletteScaleOptions): Shade[] {
+  const anchorIndex = SHADE_STEPS.indexOf(anchorShade)
+  const mirroredAnchor =
+    SHADE_STEPS[SHADE_STEPS.length - 1 - anchorIndex] ?? anchorShade
+  const generationAnchor = mode === "dark" ? mirroredAnchor : anchorShade
+  const generated = generateShadeScale({
+    color,
+    anchorShade: generationAnchor,
+  })
+  const ordered = mode === "dark" ? [...generated].reverse() : generated
+  const seedC = clampC(color.c)
+  const anchorWeight = PALETTE_CHROMA_PROFILE[anchorShade]
+
+  return SHADE_STEPS.map((step, index) => {
+    const source = ordered[index]
+    if (!source) {
+      throw new Error(`Generated palette is missing shade ${step}`)
+    }
+
+    const requestedC = seedC * (PALETTE_CHROMA_PROFILE[step] / anchorWeight)
+    const maxC = maxChromaInGamut(source.l, source.h)
+    const targetC = Math.min(requestedC, maxC)
+
+    return {
+      step,
+      l: source.l,
+      c: targetC,
+      h: source.h,
+      hex: oklchToHex({ l: source.l, c: targetC, h: source.h }),
+      css: oklchToCss({ l: source.l, c: targetC, h: source.h }),
+      inGamut: targetC >= requestedC - 1e-6,
+      isBase: step === anchorShade,
     }
   })
 }

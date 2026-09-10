@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { oklchColorSchema, parseColorInput } from "@repo/domain-theme"
+import {
+  compile,
+  oklchColorSchema,
+  oklchToCss,
+  parseColorInput,
+  type OklchString,
+} from "@repo/domain-theme"
 
 import {
   autoForeground,
@@ -97,6 +103,24 @@ describe("shade-generation lightness scale", () => {
   })
 
   describe("deriveScale seed-anchoring (regression: finding #3)", () => {
+    it.each(["light", "dark"] as const)(
+      "matches the compiler's canonical %s runtime scale",
+      (mode) => {
+        const scale = deriveScale(base, mode)
+        const compilation = compile({
+          primary: oklchToCss(base) as OklchString,
+          enableDarkMode: mode === "dark",
+          isDarkMode: mode === "dark",
+        })
+
+        for (const step of SCALE_STEPS) {
+          expect(oklchToCss(scale[step])).toBe(
+            compilation.cssVariables[`--primary-${step}`]
+          )
+        }
+      }
+    )
+
     it("responds to the seed's own lightness instead of a fixed anchor", () => {
       // Previously anchorL was a fixed 0.52/0.58 constant regardless of
       // `base.l`, so two seeds with very different lightness produced near

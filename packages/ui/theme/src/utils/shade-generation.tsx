@@ -17,15 +17,15 @@ import {
   type ColorScale,
   calculateContrastRatio,
   generateHarmony,
-  generateShadeScale,
+  generatePaletteScale,
   getAccessibleForeground,
   getWCAGLevel,
   HARMONY_HUE_OFFSETS,
   luminanceFromOklch,
-  maxChromaInGamut,
   type Oklch,
   type OklchComponents,
   oklchToCss,
+  PALETTE_CHROMA_PROFILE,
   parseOklchString,
 } from "@repo/domain-theme"
 
@@ -57,19 +57,8 @@ export const LIGHTNESS_STEPS: Record<ScaleStep, number> = {
 /**
  * Chroma multipliers per step — keep mid-range vibrant, compress extremes
  */
-export const CHROMA_MULTIPLIERS: Record<ScaleStep, number> = {
-  50: 0.08,
-  100: 0.22,
-  200: 0.42,
-  300: 0.62,
-  400: 0.82,
-  500: 1.15,
-  600: 1.15,
-  700: 1.0,
-  800: 0.88,
-  900: 0.72,
-  950: 0.6,
-}
+export const CHROMA_MULTIPLIERS: Record<ScaleStep, number> =
+  PALETTE_CHROMA_PROFILE
 
 /**
  * Hue-aware chroma multiplier.
@@ -128,7 +117,7 @@ export function calibrateLightness(rawL: number, hue: number): number {
  * Main scale derivation function.
  * Produces a full 11-step OkLCH color scale from a base color.
  *
- * Lightness is delegated to the domain's `generateShadeScale`, anchored at
+ * Lightness and chroma are delegated to the domain's `generatePaletteScale`, anchored at
  * step 500 so `base.l` is actually reflected in the output (this module
  * previously anchored every scale at a fixed 0.52/0.58 regardless of the
  * seed's own lightness — see the finding #3 regression tests). In "dark"
@@ -137,28 +126,22 @@ export function calibrateLightness(rawL: number, hue: number): number {
  * dark mode" convention (an explicit prior product choice, not something
  * this fix changes) on top of the corrected, seed-relative math.
  *
- * Chroma keeps this module's own hue-aware tapering (`getHueChromaFactor` /
- * `CHROMA_MULTIPLIERS`), gamut-clipped at each step's now-correct lightness
- * so it never exceeds the domain schema's declared chroma ceiling.
+ * Chroma uses the domain-owned anchor-normalized profile and canonical gamut
+ * policy, so editor preview and compiler output cannot drift.
  */
 export function deriveScale(
   base: Oklch,
   mode: "light" | "dark" = "light"
 ): ColorScale {
-  const anchored = generateShadeScale({ color: base, anchorShade: 500 })
-  const ordered = mode === "dark" ? [...anchored].reverse() : anchored
-  const hueFactor = getHueChromaFactor(base.h)
-
-  const entries = SCALE_STEPS.map(
-    (step: ScaleStep, i: number): [ScaleStep, Oklch] => {
-      const l = ordered[i]?.l ?? base.l
-      const stepMultiplier = CHROMA_MULTIPLIERS[step]
-      const rawC = base.c * hueFactor * (stepMultiplier ?? 1)
-      const c = Math.max(0, Math.min(maxChromaInGamut(l, base.h), rawC))
-
-      return [step, { l, c, h: base.h }] as [ScaleStep, Oklch]
-    }
-  )
+  const generated = generatePaletteScale({
+    color: base,
+    anchorShade: 500,
+    mode,
+  })
+  const entries = generated.map((shade): [ScaleStep, Oklch] => [
+    shade.step as ScaleStep,
+    { l: shade.l, c: shade.c, h: shade.h },
+  ])
 
   return Object.fromEntries(entries) as ColorScale
 }

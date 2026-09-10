@@ -32,7 +32,7 @@ export function TypographyFields({ control }: TypographyFieldsProps) {
 
   return (
     <FieldGroup className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
         {FONT_FIELDS.map(({ name, label }) => (
           <Controller
             key={name}
@@ -56,12 +56,12 @@ export function TypographyFields({ control }: TypographyFieldsProps) {
         control={control}
         render={({ field }) => (
           <Field>
-            <FieldLabel style={{ fontSize: `${fontScale}rem` }}>
-              Font Scale
-            </FieldLabel>
-            <FieldDescription className="mb-2">
-              {(fontScale * 100).toFixed(0)}%
-            </FieldDescription>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <FieldLabel>Type scale</FieldLabel>
+              <FieldDescription className="font-mono tabular-nums">
+                {(fontScale * 100).toFixed(0)}%
+              </FieldDescription>
+            </div>
             <Slider
               value={[fontScale]}
               onValueChange={(v) => field.onChange(Array.isArray(v) ? v[0] : v)}

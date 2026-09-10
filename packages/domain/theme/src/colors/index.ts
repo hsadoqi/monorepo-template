@@ -33,6 +33,7 @@ export {
   LMS_TO_RGB_MATRIX,
   OKLCH_TO_LMS_COEFFICIENTS,
   HARMONY_HUE_OFFSETS,
+  PALETTE_CHROMA_PROFILE,
   PERCENTAGE_INDEX,
 } from "./utils"
 export {
@@ -63,6 +64,7 @@ export {
   validateRgba,
   isInSrgbGamut,
   generateHarmony,
+  generatePaletteScale,
   generateShadeScale,
   generateShades,
   getAccessibleForeground,
@@ -80,15 +82,21 @@ export {
   normalizeOklch,
   maxChromaInGamut,
   meetsContrastRequirement,
+  meetsRenderedContrastRequirement,
   meetsWCAG,
   luminance,
   luminanceFromOklch,
+  renderedContrastRatio,
+  renderedLuminance,
   tryLuminance,
+  tryRenderedLuminance,
   adjustContrastByLightness,
 } from "./utils"
 export type {
   GetAccessibleForegroundOptions,
+  GeneratePaletteScaleOptions,
   GenerateShadeScaleOptions,
+  PaletteMode,
   Oklch,
   OklchColor,
   OklchObject,
@@ -114,6 +122,7 @@ export type {
   SemanticColorOverrides,
   SemanticColorName,
   Shade,
+  ShadeStep,
 } from "./utils"
 export {
   OKLCH_REGEX,

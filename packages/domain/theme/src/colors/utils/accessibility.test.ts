@@ -8,7 +8,10 @@ import {
   meetsWCAG,
   getWCAGLevel,
   getAccessibleForeground,
+  meetsRenderedContrastRequirement,
+  renderedContrastRatio,
 } from "./accessibility"
+import { renderedLuminance, tryRenderedLuminance } from "./luminance"
 import { CONTRAST_THRESHOLDS } from "../constants"
 
 describe("contrastRatio", () => {
@@ -52,6 +55,46 @@ describe("contrastRatio", () => {
     const ratio1 = contrastRatio(fg, bg)
     const ratio2 = contrastRatio(bg, fg)
     expect(ratio1).toBeCloseTo(ratio2, 5)
+  })
+})
+
+describe("rendered sRGB accessibility", () => {
+  it("uses the gamut-fitted color when raw and rendered contrast cross AA", () => {
+    const foreground = "oklch(5% 0 0)"
+    const outOfGamutBackground = "oklch(52% 0.33 175)"
+
+    expect(contrastRatio(foreground, outOfGamutBackground)).toBeGreaterThan(4.5)
+    expect(
+      renderedContrastRatio(foreground, outOfGamutBackground)
+    ).toBeLessThan(4.5)
+    expect(
+      meetsRenderedContrastRequirement(foreground, outOfGamutBackground, 4.5)
+    ).toBe(false)
+  })
+
+  it("agrees with the raw transform for an in-gamut pair", () => {
+    const foreground = "oklch(20% 0.03 250)"
+    const background = "oklch(90% 0.02 250)"
+
+    expect(renderedContrastRatio(foreground, background)).toBeCloseTo(
+      contrastRatio(foreground, background),
+      5
+    )
+  })
+
+  it("exposes strict and safe rendered luminance variants", () => {
+    expect(renderedLuminance("oklch(52% 0.33 175)")).toBeGreaterThanOrEqual(0)
+    expect(tryRenderedLuminance("not-a-color")).toBeNull()
+    expect(() => renderedLuminance("not-a-color")).toThrow()
+  })
+
+  it("verifies accessible foreground output against the rendered background", () => {
+    const background = "oklch(52% 0.33 175)"
+    const foreground = getAccessibleForeground(background)
+
+    expect(
+      renderedContrastRatio(foreground, background)
+    ).toBeGreaterThanOrEqual(4.5)
   })
 })
 
@@ -345,7 +388,7 @@ describe("adjustContrastByLightness", () => {
     expect(result).not.toBeNull()
     if (result) {
       const _originalRatio = contrastRatio(original, "oklch(100% 0 0)")
-      const adjustedRatio = contrastRatio(result, "oklch(100% 0 0)")
+      const adjustedRatio = renderedContrastRatio(result, "oklch(100% 0 0)")
       expect(adjustedRatio).toBeGreaterThanOrEqual(4)
     }
   })
@@ -395,14 +438,14 @@ describe("adjustContrastByLightness (regression)", () => {
     const bg = "oklch(95% 0 0)"
     const out = adjustContrastByLightness("oklch(50% 0.2 250)", bg, 4.5)
     expect(out).not.toBeNull()
-    expect(contrastRatio(out!, bg)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(out!, bg)).toBeGreaterThanOrEqual(4.5)
   })
 
   it("meets the ratio against a DARK background", () => {
     const bg = "oklch(10% 0 0)"
     const out = adjustContrastByLightness("oklch(50% 0.2 250)", bg, 4.5)
     expect(out).not.toBeNull()
-    expect(contrastRatio(out!, bg)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(out!, bg)).toBeGreaterThanOrEqual(4.5)
   })
 
   it("returns output that is itself parseable", () => {
@@ -466,7 +509,9 @@ describe("getAccessibleForeground (regression: finding #2)", () => {
     // only ever tried the (wrong) light direction for this background.
     const background = "oklch(58% 0 0)"
     const result = getAccessibleForeground(background)
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+      4.5
+    )
   })
 
   it.each([60, 65, 70, 75])(
@@ -474,14 +519,18 @@ describe("getAccessibleForeground (regression: finding #2)", () => {
     (percent) => {
       const background = `oklch(${percent}% 0 0)`
       const result = getAccessibleForeground(background)
-      expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+      expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+        4.5
+      )
     }
   )
 
   it("beats the old binary autoForeground's worst observed ratio (4.3666, below target)", () => {
     const background = "oklch(55% 0.12 120)"
     const result = getAccessibleForeground(background)
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+      4.5
+    )
   })
 
   it("is not limited to two achromatic outputs — preserves the background's hue", () => {
@@ -498,14 +547,16 @@ describe("getAccessibleForeground (regression: finding #2)", () => {
     // extreme tops out well under 7 — verified separately, not a bug).
     const background = "oklch(85% 0.05 30)"
     const result = getAccessibleForeground(background, { minContrast: 7 })
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(7)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(7)
   })
 
   it("defaults to the declared AA-normal target (4.5) when unspecified", () => {
     expect(CONTRAST_THRESHOLDS.AA_NORMAL).toBe(4.5)
     const background = "oklch(45% 0.08 200)"
     const result = getAccessibleForeground(background)
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+      4.5
+    )
   })
 
   it("returns a color whose exact final contrast is verified, not an intermediate candidate", () => {
@@ -513,7 +564,9 @@ describe("getAccessibleForeground (regression: finding #2)", () => {
       const background = `oklch(${l}% 0.1 180)`
       const result = getAccessibleForeground(background)
       // Recompute independently from the returned string — must hold exactly.
-      expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+      expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+        4.5
+      )
     }
   })
 
@@ -552,7 +605,9 @@ describe("getAccessibleForeground with a `shades` candidate list", () => {
     const background = ramp[0]!
     const result = getAccessibleForeground(background, { shades: ramp })
     expect(ramp).toContain(result)
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+      4.5
+    )
   })
 
   it("picks the qualifying shade closest in lightness to the background", () => {
@@ -574,13 +629,17 @@ describe("getAccessibleForeground with a `shades` candidate list", () => {
     const background = "oklch(60% 0 0)"
     const result = getAccessibleForeground(background, { shades: ramp })
     expect(ramp).not.toContain(result)
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+      4.5
+    )
   })
 
   it("ignores an empty shades array and synthesizes as before", () => {
     const background = "oklch(60% 0.15 250)"
     const result = getAccessibleForeground(background, { shades: [] })
-    expect(contrastRatio(result, background)).toBeGreaterThanOrEqual(4.5)
+    expect(renderedContrastRatio(result, background)).toBeGreaterThanOrEqual(
+      4.5
+    )
   })
 
   it("skips unparseable candidates without throwing", () => {

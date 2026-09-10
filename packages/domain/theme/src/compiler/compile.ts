@@ -12,10 +12,11 @@
 
 import { DEFAULT_OKLCH } from "../colors"
 import {
-  generateShades,
+  generatePaletteScale,
   getAccessibleForeground,
   Oklch,
   oklchToCss,
+  ShadeStep,
   toOklch,
   validateOklch,
 } from "../colors"
@@ -27,6 +28,10 @@ import type {
   CssVariables,
   ThemeCompilationReport,
 } from "./model"
+
+const PRIMARY_SEMANTIC_STEP = { light: 700, dark: 300 } as const
+const PRIMARY_RING_STEP = { light: 600, dark: 400 } as const
+const ACCENT_SEMANTIC_STEP = { light: 100, dark: 900 } as const
 
 /**
  * Compile a theme definition into CSS variables and a resolved theme.
@@ -41,7 +46,9 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
   try {
     const {
       primary,
+      primaryAnchorShade = 500,
       accent,
+      accentAnchorShade = 500,
       isDarkMode,
       customAccent,
       harmony,
@@ -119,7 +126,8 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
     try {
       const primaryBgResult = getBackgroundForColor(
         primaryOklch,
-        shouldUseDarkMode
+        shouldUseDarkMode,
+        primaryAnchorShade
       )
       if (!primaryBgResult) {
         errors.push("Failed to generate background shade for primary color")
@@ -134,7 +142,8 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
       if (accentOklch) {
         const accentBgResult = getBackgroundForColor(
           accentOklch,
-          shouldUseDarkMode
+          shouldUseDarkMode,
+          accentAnchorShade
         )
         if (accentBgResult) {
           accentBg = accentBgResult
@@ -145,7 +154,8 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
 
       const defaultBgResult = getBackgroundForColor(
         DEFAULT_OKLCH,
-        shouldUseDarkMode
+        shouldUseDarkMode,
+        500
       )
       if (!defaultBgResult) {
         errors.push("Failed to generate background shade for default color")
@@ -207,6 +217,7 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
       baseColor: string
       foreground: string
       background: string
+      anchorShade: ShadeStep
     }
 
     const palettes: Palette[] = [
@@ -216,6 +227,7 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
         baseColor: primaryBgCss,
         foreground: primaryFg,
         background: primaryBgCss,
+        anchorShade: primaryAnchorShade,
       },
       ...(accentOklch && accentBgCss
         ? [
@@ -225,6 +237,7 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
               baseColor: accentBgCss,
               foreground: accentFg!,
               background: accentBgCss,
+              anchorShade: accentAnchorShade,
             },
           ]
         : []),
@@ -234,12 +247,24 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
         baseColor: defaultBgCss,
         foreground: defaultFg,
         background: defaultBgCss,
+        anchorShade: 500,
       },
     ]
 
-    // Compile each palette to CSS variables (DRY: single loop pattern)
+    const generatedPalettes = new Map<
+      string,
+      ReturnType<typeof generatePaletteScale>
+    >()
+
+    // Compile each palette to legacy compatibility variables. Runtime
+    // design-system variables are emitted from the same generated scales below.
     for (const palette of palettes) {
-      const shades = generateShades(palette.oklch)
+      const shades = generatePaletteScale({
+        color: palette.oklch,
+        anchorShade: palette.anchorShade,
+        mode: shouldUseDarkMode ? "dark" : "light",
+      })
+      generatedPalettes.set(palette.name, shades)
 
       // Base color and foreground
       cssVariables[`--color-${palette.name}`] = palette.baseColor
@@ -250,6 +275,40 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
       for (const shade of shades) {
         cssVariables[`--color-${palette.name}-${shade.step}`] = shade.css
       }
+    }
+
+    // The design system owns the runtime CSS contract consumed by
+    // Tailwind/shadcn. Keep Tailwind's `--color-*` namespace out of runtime
+    // application: those names are compile-time aliases in `@theme inline`.
+    const primaryShades = generatedPalettes.get("primary")
+    if (!primaryShades) {
+      throw new Error("Primary palette was not generated")
+    }
+    emitRuntimePalette(cssVariables, "primary", primaryShades)
+
+    const appearance = shouldUseDarkMode ? "dark" : "light"
+    const primarySemantic = getShadeCss(
+      primaryShades,
+      PRIMARY_SEMANTIC_STEP[appearance]
+    )
+    cssVariables["--ds-color-primary"] = primarySemantic
+    cssVariables["--ds-color-primary-foreground"] =
+      getAccessibleForeground(primarySemantic)
+    cssVariables["--ds-color-ring"] = getShadeCss(
+      primaryShades,
+      PRIMARY_RING_STEP[appearance]
+    )
+
+    const accentShades = generatedPalettes.get("accent")
+    if (accentShades) {
+      emitRuntimePalette(cssVariables, "accent", accentShades)
+      const accentSemantic = getShadeCss(
+        accentShades,
+        ACCENT_SEMANTIC_STEP[appearance]
+      )
+      cssVariables["--ds-color-accent"] = accentSemantic
+      cssVariables["--ds-color-accent-foreground"] =
+        getAccessibleForeground(accentSemantic)
     }
 
     // Theme mode indicator
@@ -285,24 +344,50 @@ export function compile(input: ThemeCompilationInput): ThemeCompilationResult {
   }
 }
 
+function emitRuntimePalette(
+  cssVariables: CssVariables,
+  paletteName: "primary" | "accent",
+  shades: ReturnType<typeof generatePaletteScale>
+): void {
+  for (const shade of shades) {
+    cssVariables[`--${paletteName}-${shade.step}`] = shade.css
+  }
+}
+
+function getShadeCss(
+  shades: ReturnType<typeof generatePaletteScale>,
+  step: number
+): string {
+  const shade = shades.find((candidate) => candidate.step === step)
+  if (!shade) {
+    throw new Error(`Generated palette is missing required shade ${step}`)
+  }
+  return shade.css
+}
+
 /**
  * Get background color for a given color based on mode.
- * Dark mode: returns darkest shade (step 950)
- * Light mode: returns lightest shade (step 50)
+ * Both appearance conventions use step 50 as their surface end: light mode
+ * defines it as the lightest shade, while the currently preserved reversed
+ * dark convention defines it as the darkest shade.
  *
  * @param color Base OKLCH color to derive shade from
- * @param isDarkMode Whether to use dark mode (950 step) or light mode (50 step)
+ * @param isDarkMode Whether to generate the preserved dark ordering
  * @returns The selected shade as OKLCH color, or null if shade generation failed
  * @throws {Error} If required shade properties are missing
  */
 function getBackgroundForColor(
   color: Oklch,
-  isDarkMode: boolean | undefined
+  isDarkMode: boolean | undefined,
+  anchorShade: ShadeStep
 ): Oklch | null {
-  const shades = generateShades(color)
+  const shades = generatePaletteScale({
+    color,
+    anchorShade,
+    mode: isDarkMode ? "dark" : "light",
+  })
 
-  // Find specific shade step: use 950 for dark mode, 50 for light mode
-  const targetStep = isDarkMode ? 950 : 50
+  const targetStep = 50
   const shade = shades.find((s) => s.step === targetStep)
 
   if (!shade) {

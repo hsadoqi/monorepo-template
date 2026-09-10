@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { generateShades, generateShadeScale, SHADE_STEPS } from "./shades"
+import {
+  generatePaletteScale,
+  generateShades,
+  generateShadeScale,
+  PALETTE_CHROMA_PROFILE,
+  SHADE_STEPS,
+} from "./shades"
 import { maxChromaInGamut } from "./gamut"
 import type { Oklch } from "./core-model"
 
@@ -140,5 +146,85 @@ describe("generateShades (preserved: original nearest-step implementation, uncha
     const result = generateShades({ l: 0.58, c: 0.15, h: 250 })
     expect(result).toHaveLength(11)
     expect(result.some((s) => s.isBase)).toBe(true)
+  })
+})
+
+describe("generatePaletteScale", () => {
+  const seed: Oklch = { l: 0.55, c: 0.03, h: 250 }
+
+  it.each([100, 500, 900] as const)(
+    "preserves the full seed at explicit light anchor %i",
+    (anchorShade) => {
+      const scale = generatePaletteScale({ color: seed, anchorShade })
+      const anchor = scale.find((shade) => shade.step === anchorShade)
+
+      expect(anchor?.l).toBeCloseTo(seed.l, 5)
+      expect(anchor?.c).toBeCloseTo(seed.c, 5)
+      expect(anchor?.h).toBeCloseTo(seed.h, 5)
+      expect(anchor?.isBase).toBe(true)
+    }
+  )
+
+  it.each([100, 500, 900] as const)(
+    "preserves the full seed at explicit dark anchor %i",
+    (anchorShade) => {
+      const scale = generatePaletteScale({
+        color: seed,
+        anchorShade,
+        mode: "dark",
+      })
+      const anchor = scale.find((shade) => shade.step === anchorShade)
+
+      expect(anchor?.l).toBeCloseTo(seed.l, 5)
+      expect(anchor?.c).toBeCloseTo(seed.c, 5)
+      expect(anchor?.h).toBeCloseTo(seed.h, 5)
+      expect(anchor?.isBase).toBe(true)
+    }
+  )
+
+  it("normalizes the chroma profile around the requested anchor", () => {
+    const scale = generatePaletteScale({ color: seed, anchorShade: 500 })
+    const step50 = scale.find((shade) => shade.step === 50)
+    const step500 = scale.find((shade) => shade.step === 500)
+    const step700 = scale.find((shade) => shade.step === 700)
+
+    expect(step50?.c).toBeCloseTo(
+      seed.c * (PALETTE_CHROMA_PROFILE[50] / PALETTE_CHROMA_PROFILE[500]),
+      5
+    )
+    expect(step500?.c).toBeCloseTo(seed.c, 5)
+    expect(step700?.c).toBeCloseTo(
+      seed.c * (PALETTE_CHROMA_PROFILE[700] / PALETTE_CHROMA_PROFILE[500]),
+      5
+    )
+  })
+
+  it.each(["light", "dark"] as const)(
+    "keeps %s lightness monotonic under its preserved appearance convention",
+    (mode) => {
+      const scale = generatePaletteScale({ color: seed, mode })
+      for (let index = 1; index < scale.length; index++) {
+        const previous = scale[index - 1]!
+        const current = scale[index]!
+        if (mode === "light") {
+          expect(current.l).toBeLessThan(previous.l)
+        } else {
+          expect(current.l).toBeGreaterThan(previous.l)
+        }
+      }
+    }
+  )
+
+  it("fits every generated step into the canonical sRGB gamut", () => {
+    const scale = generatePaletteScale({
+      color: { l: 0.58, c: 0.4, h: 30 },
+      anchorShade: 500,
+    })
+
+    for (const shade of scale) {
+      expect(shade.c).toBeLessThanOrEqual(
+        maxChromaInGamut(shade.l, shade.h) + 1e-6
+      )
+    }
   })
 })

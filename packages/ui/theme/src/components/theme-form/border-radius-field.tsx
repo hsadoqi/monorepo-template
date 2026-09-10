@@ -14,22 +14,22 @@ export type BorderRadiusFieldProps = {
 
 export function BorderRadiusField({ control }: BorderRadiusFieldProps) {
   return (
-    <FieldGroup className="space-y-4">
+    <FieldGroup>
       <Controller
         name="borderRadius"
         control={control}
         render={({ field }) => (
           <Field>
-            <FieldLabel>Border Radius</FieldLabel>
+            <FieldLabel>Corner radius</FieldLabel>
             <RadioGroup
               value={field.value}
               onValueChange={field.onChange}
-              className="flex gap-2 justify-evenly w-full items-center mt-3"
+              className="mt-3 grid grid-cols-5 gap-2"
             >
               {RADIUS_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className={`flex flex-col items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex min-w-0 cursor-pointer flex-col items-center gap-2 rounded-lg border p-2 transition-colors ${
                     field.value === option.value
                       ? "border-primary/60 bg-primary/5"
                       : "border-border hover:border-border/80"

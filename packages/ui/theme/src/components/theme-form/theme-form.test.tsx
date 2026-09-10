@@ -33,9 +33,9 @@ describe("ThemeForm", () => {
     render(<ThemeForm />)
 
     const enableDarkMode = screen.getByRole("switch", {
-      name: "Enable Dark Mode",
+      name: "Dark presentation",
     })
-    const darkMode = screen.getByRole("switch", { name: "Dark Mode" })
+    const darkMode = screen.getByRole("switch", { name: "Preview in dark" })
 
     expect(darkMode.getAttribute("aria-disabled")).toBe("true")
 
@@ -56,9 +56,7 @@ describe("ThemeForm", () => {
 
     expect(screen.queryByText("No accent selected yet")).toBeNull()
 
-    await user.click(
-      screen.getByRole("switch", { name: "Add Custom Accent Color" })
-    )
+    await user.click(screen.getByRole("switch", { name: "Use an accent" }))
     expect(screen.getByText("No accent selected yet")).toBeTruthy()
 
     await user.click(
@@ -75,21 +73,59 @@ describe("ThemeForm", () => {
     const user = userEvent.setup()
     render(<ThemeForm />)
 
-    await user.click(
-      screen.getByRole("switch", { name: "Add Custom Accent Color" })
-    )
+    await user.click(screen.getByRole("switch", { name: "Use an accent" }))
     await user.click(
       await screen.findByRole("button", { name: "Complementary 1" })
     )
     expect(screen.queryByText("No accent selected yet")).toBeNull()
 
-    await user.click(
-      screen.getByRole("switch", { name: "Add Custom Accent Color" })
-    )
-    await user.click(
-      screen.getByRole("switch", { name: "Add Custom Accent Color" })
-    )
+    await user.click(screen.getByRole("switch", { name: "Use an accent" }))
+    await user.click(screen.getByRole("switch", { name: "Use an accent" }))
 
     expect(screen.getByText("No accent selected yet")).toBeTruthy()
+  })
+
+  it("keeps the preview mounted and updates compiled variables live", async () => {
+    const user = userEvent.setup()
+    render(<ThemeForm />)
+
+    const preview = document.querySelector<HTMLElement>("[data-theme-preview]")
+    expect(preview).not.toBeNull()
+    expect(preview?.style.getPropertyValue("--radius")).toBe("0.5rem")
+
+    await user.click(screen.getByRole("radio", { name: "Large" }))
+
+    expect(preview?.style.getPropertyValue("--radius")).toBe("1rem")
+  })
+
+  it("switches between compact editor views", async () => {
+    const user = userEvent.setup()
+    render(<ThemeForm />)
+
+    const previewTab = screen.getByRole("tab", { name: "Preview" })
+    await user.click(previewTab)
+
+    expect(previewTab.getAttribute("aria-selected")).toBe("true")
+    expect(screen.getByRole("tabpanel", { name: "Preview" })).toBeTruthy()
+  })
+
+  it("submits the canonical values with their compiled preview", async () => {
+    const user = userEvent.setup()
+    const onSave = vi.fn()
+    render(<ThemeForm onSave={onSave} />)
+
+    await user.click(screen.getByRole("button", { name: "Save theme" }))
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        primaryColor: expect.stringMatching(/^oklch\(/),
+      }),
+      expect.objectContaining({
+        theme: expect.objectContaining({ colors: expect.any(Object) }),
+        cssVariables: expect.objectContaining({
+          "--color-primary": expect.any(String),
+        }),
+      })
+    )
   })
 })

@@ -31,16 +31,21 @@ export function AppearanceFields({ control, setValue }: AppearanceFieldsProps) {
   const enableDarkMode = useWatch({ control, name: "enableDarkMode" })
 
   return (
-    <FieldGroup className="space-y-4 flex flex-col items-end flex-1">
-      <div className="grid grid-cols-2 gap-4">
+    <FieldGroup>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
         <Controller
           name="enableDarkMode"
           control={control}
           render={({ field }) => (
-            <Field>
-              <FieldLabel htmlFor="theme-enable-dark-mode">
-                Enable Dark Mode
-              </FieldLabel>
+            <Field
+              orientation="horizontal"
+              className="items-center rounded-lg border p-3"
+            >
+              <div className="min-w-0 flex-1">
+                <FieldLabel htmlFor="theme-enable-dark-mode">
+                  Dark presentation
+                </FieldLabel>
+              </div>
               <FieldContent>
                 <Switch
                   id="theme-enable-dark-mode"
@@ -62,8 +67,15 @@ export function AppearanceFields({ control, setValue }: AppearanceFieldsProps) {
           name="isDarkMode"
           control={control}
           render={({ field }) => (
-            <Field>
-              <FieldLabel htmlFor="theme-is-dark-mode">Dark Mode</FieldLabel>
+            <Field
+              orientation="horizontal"
+              className="items-center rounded-lg border p-3"
+            >
+              <div className="min-w-0 flex-1">
+                <FieldLabel htmlFor="theme-is-dark-mode">
+                  Preview in dark
+                </FieldLabel>
+              </div>
               <FieldContent>
                 <ThemeSwitch
                   id="theme-is-dark-mode"

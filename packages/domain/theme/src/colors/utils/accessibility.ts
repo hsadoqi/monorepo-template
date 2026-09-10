@@ -1,11 +1,18 @@
 import { CONTRAST_THRESHOLDS, OKLCH_REGEX } from "../constants"
 import { oklchToCss } from "./convert"
 import { maxChromaInGamut } from "./gamut"
-import { luminance, tryLuminance } from "./luminance"
+import {
+  luminance,
+  renderedLuminance,
+  tryLuminance,
+  tryRenderedLuminance,
+} from "./luminance"
 import { parseOklchString } from "./parse"
 
 /**
- * Calculates WCAG 2.0 contrast ratio between two colors.
+ * Calculates contrast from the raw OKLCH transforms. Preserved for compatibility
+ * and color-science comparisons; use `renderedContrastRatio()` for WCAG decisions
+ * about colors displayed in sRGB.
  * @param foreground - OKLch color for foreground text
  * @param background - OKLch color for background
  * @returns Contrast ratio (1-21) where higher is better
@@ -15,6 +22,20 @@ import { parseOklchString } from "./parse"
  */
 export function contrastRatio(foreground: string, background: string): number {
   return calculateContrastRatio(luminance(foreground), luminance(background))
+}
+
+/**
+ * WCAG contrast between the canonical sRGB-renderable projections of two
+ * OKLCH colors. Use this for accessibility decisions and UI readouts.
+ */
+export function renderedContrastRatio(
+  foreground: string,
+  background: string
+): number {
+  return calculateContrastRatio(
+    renderedLuminance(foreground),
+    renderedLuminance(background)
+  )
 }
 
 /**
@@ -28,7 +49,8 @@ export function calculateContrastRatio(l1: number, l2: number): number {
 }
 
 /**
- * Safely checks if two colors meet a contrast ratio requirement.
+ * Safely checks the raw transformed colors against a contrast requirement.
+ * Use `meetsRenderedContrastRequirement()` for accessibility decisions.
  * @returns true if contrast >= minRatio, false if invalid or insufficient
  */
 export function meetsContrastRequirement(
@@ -38,6 +60,22 @@ export function meetsContrastRequirement(
 ): boolean {
   const fgLuminance = tryLuminance(foreground)
   const bgLuminance = tryLuminance(background)
+
+  if (fgLuminance === null || bgLuminance === null) {
+    return false
+  }
+
+  return calculateContrastRatio(fgLuminance, bgLuminance) >= minRatio
+}
+
+/** Safe rendered-color threshold check for accessibility search/validation. */
+export function meetsRenderedContrastRequirement(
+  foreground: string,
+  background: string,
+  minRatio: number
+): boolean {
+  const fgLuminance = tryRenderedLuminance(foreground)
+  const bgLuminance = tryRenderedLuminance(background)
 
   if (fgLuminance === null || bgLuminance === null) {
     return false
@@ -63,7 +101,7 @@ const NEAR_WHITE = "oklch(95% 0 0)"
  * @returns "oklch(5% 0 0)" or "oklch(95% 0 0)", whichever wins
  */
 export function suggestTextColorForBackground(background: string): string {
-  const bgLuminance = tryLuminance(background)
+  const bgLuminance = tryRenderedLuminance(background)
   if (bgLuminance === null) return NEAR_BLACK
 
   const blackRatio = calculateContrastRatio(
@@ -79,12 +117,13 @@ export function suggestTextColorForBackground(background: string): string {
 
 function luminanceOf(color: string): number {
   // NEAR_BLACK/NEAR_WHITE are fixed, always-valid literals — non-null here.
-  return tryLuminance(color) as number
+  return tryRenderedLuminance(color) as number
 }
 
 /**
- * Adjusts a foreground color's lightness until it meets a minimum contrast
- * ratio against the background, moving as little as possible.
+ * Adjusts a foreground color's lightness until its rendered sRGB projection
+ * meets a minimum contrast ratio against the rendered background, moving as
+ * little as possible.
  *
  * Direction is chosen from the background: darken against a light background,
  * lighten against a dark one. The candidate string is built with its final
@@ -104,7 +143,7 @@ export function adjustContrastByLightness(
   const match = foreground.match(OKLCH_REGEX)
   if (!match?.[1] || !match[3] || !match[4]) return null
 
-  const bgLuminance = tryLuminance(background)
+  const bgLuminance = tryRenderedLuminance(background)
   if (bgLuminance === null) return null
 
   const usesPercent = match[2] === "%"
@@ -132,7 +171,7 @@ export function adjustContrastByLightness(
     const mid = (lo + hi) / 2
     const candidate = format(mid)
 
-    if (meetsContrastRequirement(candidate, background, minRatio)) {
+    if (meetsRenderedContrastRequirement(candidate, background, minRatio)) {
       best = candidate
       if (darken) lo = mid
       else hi = mid
@@ -170,7 +209,8 @@ function pickNearestQualifyingShade(
   let best: { css: string; delta: number } | null = null
 
   for (const candidate of shades) {
-    if (!meetsContrastRequirement(candidate, background, minContrast)) continue
+    if (!meetsRenderedContrastRequirement(candidate, background, minContrast))
+      continue
 
     const parsed = parseOklchString(candidate)
     const delta = parsed ? Math.abs(parsed.l - bgLightness) : 0
@@ -240,7 +280,9 @@ export function getAccessibleForeground(
       const c = Math.min(relatedChroma, maxChromaInGamut(mid, bg.h))
       const candidate = oklchToCss({ l: mid, c, h: bg.h })
 
-      if (meetsContrastRequirement(candidate, background, minContrast)) {
+      if (
+        meetsRenderedContrastRequirement(candidate, background, minContrast)
+      ) {
         best = { l: mid, c }
         // Smallest adjustment = the boundary closest to bg.l that still
         // passes, approached from the passing side.
@@ -275,7 +317,7 @@ export function getAccessibleForeground(
 
   const finalCss = oklchToCss({ l: picked.l, c: picked.c, h: bg.h })
   // Verify the EXACT returned color, not an intermediate candidate.
-  return meetsContrastRequirement(finalCss, background, minContrast)
+  return meetsRenderedContrastRequirement(finalCss, background, minContrast)
     ? finalCss
     : suggestTextColorForBackground(background)
 }

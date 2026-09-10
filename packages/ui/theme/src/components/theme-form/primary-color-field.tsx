@@ -24,8 +24,8 @@ import { ChevronDown } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   oklchToCss,
-  contrastRatio,
   getWCAGLevel,
+  renderedContrastRatio,
 } from "@repo/domain-theme/colors"
 import { ColorPreviewStrip } from "../colors"
 import {
@@ -54,10 +54,11 @@ export function PrimaryColorField({
   colorResetKey,
 }: PrimaryColorFieldProps) {
   const isDarkMode = useWatch({ control, name: "isDarkMode" })
-  const primaryColor = colorState.color
-  const wcagLevel = getWCAGLevel(
-    contrastRatio(oklchToCss(primaryColor), "oklch(95% 0 0)")
+  const renderedRatio = renderedContrastRatio(
+    oklchToCss(colorState.displayColor),
+    "oklch(95% 0 0)"
   )
+  const wcagLevel = getWCAGLevel(renderedRatio)
 
   return (
     <Field key={colorResetKey}>
@@ -117,10 +118,7 @@ export function PrimaryColorField({
               <div className="mt-1 flex items-center gap-2 text-xs">
                 <span className="font-medium">WCAG {wcagLevel}</span>
                 <span className="text-muted-foreground">
-                  {contrastRatio(
-                    oklchToCss(primaryColor),
-                    "oklch(95% 0 0)"
-                  ).toFixed(2)}
+                  {renderedRatio.toFixed(2)}
                   :1
                 </span>
                 {!colorState.inGamut && (

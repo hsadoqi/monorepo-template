@@ -2,17 +2,19 @@
 
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
-import type { z } from "zod"
-import { Field, FieldGroup } from "@repo/ui-components/base/field"
 import { Button } from "@repo/ui-components/base/button"
 import {
   parseOklchString,
   oklchToCss,
   DEFAULT_PRIMARY_COLOR,
 } from "@repo/domain-theme/colors"
-import { compile } from "@repo/domain-theme/compiler"
+import {
+  compile,
+  type ThemeCompilationResult,
+} from "@repo/domain-theme/compiler"
+import { cn } from "@repo/ui-components/lib/utils"
 import { getColorHarmonies } from "../../utils/get-color-harmonies"
 import { useOklchColor, DEFAULT_OKLCH_COLOR } from "../../hooks/use-oklch-color"
 import { themeFormSchema, type ThemeFormValues } from "./theme-form-schema"
@@ -22,31 +24,96 @@ import { CustomAccentToggle, AccentColorPicker } from "./accent-color-section"
 import { PrimaryColorField } from "./primary-color-field"
 import { TypographyFields } from "./typography-fields"
 import { BorderRadiusField } from "./border-radius-field"
+import { ThemePreview } from "./theme-preview"
+import { ScrollArea } from "@repo/ui-components/base/scroll-area"
 
 export { themeFormSchema }
 
-export const ThemeForm = () => {
+export type ThemeFormProps = {
+  className?: string
+  onSave?: (
+    values: ThemeFormValues,
+    compilation: ThemeCompilationResult
+  ) => void
+}
+
+const DEFAULT_VALUES: ThemeFormValues = {
+  primaryColor: DEFAULT_PRIMARY_COLOR,
+  harmonyType: "complementary",
+  headingFont: "system-ui",
+  bodyFont: "system-ui",
+  monoFont: "system-ui",
+  fontScale: 1,
+  borderRadius: "0.5",
+  isDarkMode: undefined,
+  enableDarkMode: false,
+  customAccent: false,
+}
+
+const DEFAULT_PRIMARY_OKLCH =
+  parseOklchString(DEFAULT_PRIMARY_COLOR) ?? DEFAULT_OKLCH_COLOR
+
+function compileDraft(values: unknown): ThemeCompilationResult | null {
+  const parsed = themeFormSchema.safeParse(values)
+  if (!parsed.success) return null
+
+  const compilation = compile(toThemeCompilationInput(parsed.data))
+  return compilation.report.success && compilation.theme ? compilation : null
+}
+
+function EditorSection({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="border-border/70 border-b px-1 py-6 last:border-b-0">
+      <div className="mb-5">
+        <h2 className="font-heading text-sm font-semibold">{title}</h2>
+        <p className="text-muted-foreground mt-1 max-w-[48ch] text-xs leading-5">
+          {description}
+        </p>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+export function ThemeForm({ className, onSave }: ThemeFormProps) {
   const form = useForm<ThemeFormValues>({
     resolver: zodResolver(themeFormSchema),
-    defaultValues: {
-      primaryColor: DEFAULT_PRIMARY_COLOR,
-      harmonyType: "complementary",
-      headingFont: "system-ui",
-      bodyFont: "system-ui",
-      monoFont: "system-ui",
-      fontScale: 1,
-      borderRadius: "0.5",
-      isDarkMode: undefined,
-      enableDarkMode: false,
-      customAccent: false,
-    },
+    defaultValues: DEFAULT_VALUES,
   })
-
+  const formId = React.useId()
+  const draftValues = useWatch({ control: form.control })
   const [colorResetKey, setColorResetKey] = React.useState(0)
+  const [compactView, setCompactView] = React.useState<"customize" | "preview">(
+    "customize"
+  )
+
+  const initialCompilation = React.useMemo(() => {
+    const result = compileDraft(DEFAULT_VALUES)
+    if (!result) throw new Error("Default theme values must compile")
+    return result
+  }, [])
+  const lastSuccessfulCompilation = React.useRef(initialCompilation)
+
+  const draftCompilation = React.useMemo(
+    () => compileDraft(draftValues),
+    [draftValues]
+  )
+  if (draftCompilation) {
+    lastSuccessfulCompilation.current = draftCompilation
+  }
+  const previewCompilation = lastSuccessfulCompilation.current
 
   const colorState = useOklchColor({
     initial:
-      parseOklchString(form.getValues("primaryColor")) ?? DEFAULT_OKLCH_COLOR,
+      parseOklchString(form.getValues("primaryColor")) ?? DEFAULT_PRIMARY_OKLCH,
     onChange: (color) =>
       form.setValue("primaryColor", oklchToCss(color), {
         shouldDirty: true,
@@ -55,11 +122,6 @@ export const ThemeForm = () => {
   })
 
   const primaryColor = colorState.color
-
-  // `getColorHarmonies` runs nine hue-rotation + gamut-fit passes; `primaryColor`
-  // is only a new object when the color actually changes (see useOklchColor),
-  // so this avoids recomputing whenever this component re-renders for an
-  // unrelated reason.
   const harmonies = React.useMemo(
     () => getColorHarmonies(primaryColor),
     [primaryColor]
@@ -74,161 +136,204 @@ export const ThemeForm = () => {
       }),
   })
 
-  function onSubmit(data: z.infer<typeof themeFormSchema>) {
-    const { theme, cssVariables, report } = compile(
-      toThemeCompilationInput(data)
-    )
+  function handleSubmit(data: ThemeFormValues) {
+    const compilation = compile(toThemeCompilationInput(data))
 
-    if (!report.success || !theme) {
-      toast.error("Theme compilation failed", {
-        description: report.errors.join(", "),
+    if (!compilation.report.success || !compilation.theme) {
+      toast.error("Theme could not be saved", {
+        description:
+          compilation.report.errors.join(", ") ||
+          "Check the highlighted theme values and try again.",
         position: "bottom-right",
       })
       return
     }
 
-    if (report.warnings.length > 0) {
-      toast.warning("Theme compiled with warnings", {
-        description: report.warnings.join(", "),
-        position: "bottom-right",
-      })
+    onSave?.(data, compilation)
+
+    if (compilation.report.warnings.length > 0) {
+      toast.warning(
+        onSave ? "Theme saved with warnings" : "Preview compiled with warnings",
+        {
+          description: compilation.report.warnings.join(", "),
+          position: "bottom-right",
+        }
+      )
+      return
     }
 
-    toast("Theme configuration saved:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground text-xs">
-          <code>{JSON.stringify({ theme, cssVariables }, null, 2)}</code>
-        </pre>
-      ),
+    toast.success(onSave ? "Theme saved" : "Theme preview is ready", {
+      description: onSave
+        ? "Your theme is ready to use."
+        : "Connect this editor to a theme library to persist the draft.",
       position: "bottom-right",
     })
   }
 
-  return (
-    <div className="space-y-6 px-2 py-4">
-      <form id="form-theme" onSubmit={form.handleSubmit(onSubmit)}>
-        {/* <FieldGroup className="space-y-4"> */}
-        <FieldGroup className="space-y-4">
-          {/* <Controller
-              name="name"
+  const controls = (
+    <div className="h-full overflow-hidden px-4 sm:px-5 lg:px-6">
+      <ScrollArea dir="vertical" className="h-full">
+        <EditorSection
+          title="Colors"
+          description="Set the primary identity, then add a harmonious accent when the theme needs a second voice."
+        >
+          <div className="space-y-6">
+            <PrimaryColorField
               control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="theme-name">Name</FieldLabel>
-                  <InputGroupInput
-                    {...field}
-                    id="theme-name"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Untitled"
-                    maxLength={64}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+              colorState={colorState}
+              colorResetKey={colorResetKey}
             />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="theme-description">
-                    Description
-                  </FieldLabel>
-                  <InputGroup>
-                    <InputGroupTextarea
-                      {...field}
-                      id="theme-description"
-                      placeholder="Describe your theme..."
-                      rows={3}
-                      className="min-h-20 resize-none"
-                      maxLength={256}
-                    />
-                    <InputGroupAddon align="block-end">
-                      <InputGroupText className="tabular-nums text-xs">
-                        {field.value?.length || 0}/256
-                      </InputGroupText>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
-              )}
-            />
-          </FieldGroup>
-
-          <div className="flex gap-4">
-            <div className="flex flex-col flex-1">
-              <Controller
-                name="tags"
+            <div className="border-border/70 rounded-lg border p-4">
+              <CustomAccentToggle
                 control={form.control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel htmlFor="theme-tags">Tags</FieldLabel>
-                    <TagsInput
-                      field={{
-                        ...field,
-                        value: field.value || [],
-                      }}
-                    />
-                    <FieldDescription>
-                      Comma-separated tags for organization
-                    </FieldDescription>
-                  </Field>
-                )}
+                setValue={form.setValue}
+                accentColorState={accentColorState}
               />
-            </div> */}
-          <div className="flex">
-            <CustomAccentToggle
-              control={form.control}
-              setValue={form.setValue}
-              accentColorState={accentColorState}
-            />
-            <AppearanceFields control={form.control} setValue={form.setValue} />
-          </div>
-          {/* </div> */}
-
-          <FieldGroup>
-            <div className="grid grid-cols-1 gap-4 w-full">
-              <PrimaryColorField
+              <AccentColorPicker
                 control={form.control}
-                colorState={colorState}
-                colorResetKey={colorResetKey}
+                primaryColor={primaryColor}
+                harmonies={harmonies}
+                accentColorState={accentColorState}
               />
             </div>
+          </div>
+        </EditorSection>
 
-            <AccentColorPicker
-              control={form.control}
-              primaryColor={primaryColor}
-              harmonies={harmonies}
-              accentColorState={accentColorState}
-            />
-          </FieldGroup>
-
-          <TypographyFields control={form.control} />
-
-          <BorderRadiusField control={form.control} />
-        </FieldGroup>
-      </form>
-
-      <Field
-        orientation="horizontal"
-        className="gap-2 pt-4 border-t border-border"
-      >
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            form.reset()
-            setColorResetKey((key) => key + 1)
-          }}
+        <EditorSection
+          title="Typography"
+          description="Choose typefaces for hierarchy, reading, and technical content."
         >
-          Reset
-        </Button>
-        <Button type="submit" form="form-theme" className="flex-1">
-          Save Theme
-        </Button>
-      </Field>
+          <TypographyFields control={form.control} />
+        </EditorSection>
+
+        <EditorSection
+          title="Shape"
+          description="Control how soft or precise containers and controls feel."
+        >
+          <BorderRadiusField control={form.control} />
+        </EditorSection>
+
+        <EditorSection
+          title="Appearance"
+          description="Enable and inspect the dark presentation of this theme draft."
+        >
+          <AppearanceFields control={form.control} setValue={form.setValue} />
+        </EditorSection>
+      </ScrollArea>
+    </div>
+  )
+
+  const preview = (
+    <div className="bg-muted/35 min-h-full p-3 sm:p-5 lg:p-6">
+      <ThemePreview
+        compilation={previewCompilation}
+        className="lg:sticky lg:top-6 lg:min-h-[38rem]"
+      />
+      {!draftCompilation && (
+        <p
+          role="status"
+          className="border-border bg-background text-muted-foreground mx-auto mt-3 max-w-xl rounded-md border px-3 py-2 text-xs"
+        >
+          Previewing your last valid changes. Finish the current value to update
+          the preview.
+        </p>
+      )}
+    </div>
+  )
+
+  return (
+    <div
+      className={cn(
+        "bg-background text-foreground flex min-h-0 flex-col overflow-hidden",
+        className
+      )}
+    >
+      <form
+        id={formId}
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="contents"
+      >
+        <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(20rem,25rem)_minmax(32rem,1fr)]">
+          <div className="border-border/70 bg-background sticky top-0 z-10 shrink-0 border-b p-3 lg:hidden">
+            <div
+              role="tablist"
+              className="grid w-full grid-cols-2"
+              aria-label="Theme editor view"
+            >
+              {(["customize", "preview"] as const).map((view) => (
+                <button
+                  key={view}
+                  type="button"
+                  role="tab"
+                  id={`${formId}-${view}-tab`}
+                  aria-controls={`${formId}-${view}-panel`}
+                  aria-selected={compactView === view}
+                  tabIndex={compactView === view ? 0 : -1}
+                  onClick={() => setCompactView(view)}
+                  onKeyDown={(event) => {
+                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+                      return
+                    event.preventDefault()
+                    setCompactView(
+                      view === "customize" ? "preview" : "customize"
+                    )
+                  }}
+                  className="text-muted-foreground hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                >
+                  {view === "customize" ? "Customize" : "Preview"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div
+            id={`${formId}-customize-panel`}
+            role="tabpanel"
+            aria-labelledby={`${formId}-customize-tab`}
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto lg:block lg:border-r",
+              compactView !== "customize" && "hidden"
+            )}
+          >
+            {controls}
+          </div>
+          <div
+            id={`${formId}-preview-panel`}
+            role="tabpanel"
+            aria-labelledby={`${formId}-preview-tab`}
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto lg:block",
+              compactView !== "preview" && "hidden"
+            )}
+          >
+            {preview}
+          </div>
+        </div>
+
+        <footer className="border-border/70 bg-background/95 supports-backdrop-filter:bg-background/85 z-20 flex shrink-0 items-center gap-2 border-t px-4 py-3 backdrop-blur sm:px-5">
+          <p className="text-muted-foreground hidden min-w-0 flex-1 truncate text-xs sm:block">
+            {form.formState.isDirty
+              ? "Unsaved changes are visible in the preview."
+              : "Start with the default theme or adjust any value."}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!form.formState.isDirty}
+            onClick={() => {
+              form.reset(DEFAULT_VALUES)
+              colorState.setColor(DEFAULT_PRIMARY_OKLCH)
+              accentColorState.clear()
+              setColorResetKey((key) => key + 1)
+            }}
+          >
+            Reset
+          </Button>
+          <Button type="submit" className="min-w-28">
+            {onSave ? "Save theme" : "Finish preview"}
+          </Button>
+        </footer>
+      </form>
     </div>
   )
 }

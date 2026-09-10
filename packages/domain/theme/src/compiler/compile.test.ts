@@ -1,6 +1,16 @@
 import { describe, it, expect } from "vitest"
 import { compile } from "./compile"
 import type { ThemeCompilationInput } from "./model"
+import {
+  fitToGamut,
+  oklchToCss,
+  renderedContrastRatio,
+  toOklch,
+} from "../colors"
+
+const SHADE_STEPS = [
+  50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,
+] as const
 
 describe("compile()", () => {
   const primaryColor = "oklch(55% 0.15 200)"
@@ -77,6 +87,18 @@ describe("compile()", () => {
 
       expect(result.theme?.isDarkMode).toBe(true)
     })
+
+    it("keeps the legacy dark background alias on the dark end of the reversed scale", () => {
+      const result = compile({
+        primary: primaryColor,
+        isDarkMode: true,
+        enableDarkMode: true,
+      })
+
+      expect(result.cssVariables["--color-primary"]).toBe(
+        result.cssVariables["--primary-50"]
+      )
+    })
   })
 
   describe("harmony", () => {
@@ -144,6 +166,140 @@ describe("compile()", () => {
   })
 
   describe("CSS variable generation", () => {
+    it("defaults the authored primary seed to shade 500", () => {
+      const result = compile({ primary: primaryColor })
+
+      expect(result.cssVariables["--primary-500"]).toBe(
+        oklchToCss(fitToGamut(toOklch(primaryColor)))
+      )
+    })
+
+    it("preserves an explicit primary anchor", () => {
+      const result = compile({
+        primary: primaryColor,
+        primaryAnchorShade: 700,
+      })
+
+      expect(result.cssVariables["--primary-700"]).toBe(
+        oklchToCss(fitToGamut(toOklch(primaryColor)))
+      )
+    })
+
+    it("preserves an explicit accent anchor", () => {
+      const accentColor = "oklch(60% 0.12 30)"
+      const result = compile({
+        primary: primaryColor,
+        accent: accentColor,
+        customAccent: true,
+        accentAnchorShade: 300,
+      })
+
+      expect(result.cssVariables["--accent-300"]).toBe(
+        oklchToCss(fitToGamut(toOklch(accentColor)))
+      )
+    })
+
+    it("emits the design-system runtime primary scale", () => {
+      const result = compile({ primary: primaryColor })
+
+      for (const step of SHADE_STEPS) {
+        expect(result.cssVariables[`--primary-${step}`]).toMatch(
+          /^oklch\(.*\)$/
+        )
+      }
+    })
+
+    it("resolves light primary semantics and ring from the emitted scale", () => {
+      const result = compile({ primary: primaryColor, isDarkMode: false })
+
+      expect(result.cssVariables["--ds-color-primary"]).toBe(
+        result.cssVariables["--primary-700"]
+      )
+      expect(result.cssVariables["--ds-color-ring"]).toBe(
+        result.cssVariables["--primary-600"]
+      )
+      expect(
+        renderedContrastRatio(
+          result.cssVariables["--ds-color-primary-foreground"]!,
+          result.cssVariables["--ds-color-primary"]!
+        )
+      ).toBeGreaterThanOrEqual(4.5)
+    })
+
+    it("resolves dark primary semantics and ring from the emitted scale", () => {
+      const result = compile({
+        primary: primaryColor,
+        enableDarkMode: true,
+        isDarkMode: true,
+      })
+
+      expect(result.cssVariables["--ds-color-primary"]).toBe(
+        result.cssVariables["--primary-300"]
+      )
+      expect(result.cssVariables["--ds-color-ring"]).toBe(
+        result.cssVariables["--primary-400"]
+      )
+      expect(
+        renderedContrastRatio(
+          result.cssVariables["--ds-color-primary-foreground"]!,
+          result.cssVariables["--ds-color-primary"]!
+        )
+      ).toBeGreaterThanOrEqual(4.5)
+    })
+
+    it("emits a custom accent scale and accessible semantic pair", () => {
+      const result = compile({
+        primary: primaryColor,
+        accent: "oklch(60% 0.12 30)",
+        customAccent: true,
+      })
+
+      for (const step of SHADE_STEPS) {
+        expect(result.cssVariables[`--accent-${step}`]).toMatch(/^oklch\(.*\)$/)
+      }
+      expect(result.cssVariables["--ds-color-accent"]).toBe(
+        result.cssVariables["--accent-100"]
+      )
+      expect(
+        renderedContrastRatio(
+          result.cssVariables["--ds-color-accent-foreground"]!,
+          result.cssVariables["--ds-color-accent"]!
+        )
+      ).toBeGreaterThanOrEqual(4.5)
+    })
+
+    it("inherits the design-system accent contract when custom accent is disabled", () => {
+      const result = compile({
+        primary: primaryColor,
+        accent: "oklch(60% 0.12 30)",
+        customAccent: false,
+      })
+
+      for (const step of SHADE_STEPS) {
+        expect(result.cssVariables[`--accent-${step}`]).toBeUndefined()
+      }
+      expect(result.cssVariables["--ds-color-accent"]).toBeUndefined()
+      expect(
+        result.cssVariables["--ds-color-accent-foreground"]
+      ).toBeUndefined()
+    })
+
+    it("inherits the design-system accent contract when a custom accent is invalid", () => {
+      const result = compile({
+        primary: primaryColor,
+        accent: "not-a-color" as ThemeCompilationInput["accent"],
+        customAccent: true,
+      })
+
+      expect(result.report.success).toBe(true)
+      expect(result.report.warnings).toHaveLength(1)
+      expect(result.cssVariables["--accent-500"]).toBeUndefined()
+      expect(result.cssVariables["--ds-color-accent"]).toBeUndefined()
+      expect(
+        result.cssVariables["--ds-color-accent-foreground"]
+      ).toBeUndefined()
+    })
+
     it("generates base color variables in oklch() format", () => {
       const input: ThemeCompilationInput = {
         primary: primaryColor,

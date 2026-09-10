@@ -1,4 +1,4 @@
-import { ColorHarmony, OklchString } from "../colors/utils"
+import { ColorHarmony, OklchString, ShadeStep } from "../colors/utils"
 import { ThemeDefColors } from "../definition"
 
 export interface ThemeCompilationInput {
@@ -6,7 +6,11 @@ export interface ThemeCompilationInput {
   enableDarkMode?: boolean
   customAccent?: boolean
   primary: OklchString
+  /** Shade occupied by the authored primary seed. Defaults to 500. */
+  primaryAnchorShade?: ShadeStep
   accent?: OklchString
+  /** Shade occupied by the authored accent seed. Defaults to 500. */
+  accentAnchorShade?: ShadeStep
   harmony?: ColorHarmony
   headingFont?: string
   bodyFont?: string
